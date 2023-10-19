@@ -8,8 +8,11 @@ Details: Testing mainline for Windows sound API
 #include <stdio.h>
 #include <windows.h>
 
+#pragma warning(disable : 4996)
+
 int	main(int argc, char *argv[])
 {
+	
 	extern short iBigBuf[];												// buffer
 	extern long  lBigBufSize;											// total number of samples
 	short* iBigBufNew = (short*)malloc(lBigBufSize*sizeof(short));		// buffer used for reading recorded sound from file
@@ -38,11 +41,11 @@ int	main(int argc, char *argv[])
 	scanf_s("%c", &save, 1);
 	while ((c = getchar()) != '\n' && c != EOF) {}								// Flush other input
 	if ((save == 'y') || (save == 'Y')) {
-		/* Open input file */
-		fopen_s(&f, "C:\\Users\\kyled\\Documents\\Conestoga\\Current Semester\\F2.23\\Projects III\\CMS\\W1\\recording.dat", "wb");
+		//Open input file 
+		f = fopen("recording.dat", "w");
 
 		if (!f) {
-			printf("unable to open %s\n", "C:\\Users\\kyled\\Documents\\Conestoga\\Current Semester\\F2.23\\Projects III\\CMS\\W1\\recording.dat");
+			printf("unable to open %s\n", "recording.dat");
 			return 0;
 		}
 		printf("Writing to sound file ...\n");
@@ -55,10 +58,10 @@ int	main(int argc, char *argv[])
 	scanf_s("%c", &replay, 1);
 	while ((c = getchar()) != '\n' && c != EOF) {}								// Flush other input
 	if ((replay == 'y') || (replay == 'Y')) {
-		/* Open input file */
-		fopen_s(&f, "C:\\Users\\kyled\\Documents\\Conestoga\\Current Semester\\F2.23\\Projects III\\CMS\\W1\\recording.dat", "rb");
+		// Open input file 
+		f = fopen( "recording.dat", "r");
 		if (!f) {
-			printf("unable to open %s\n", "C:\\Users\\kyled\\Documents\\Conestoga\\Current Semester\\F2.23\\Projects III\\CMS\\W1\\recording.dat");
+			printf("unable to open %s\n", "recording.dat");
 			return 0;
 		}
 		printf("Reading from sound file ...\n");
@@ -73,4 +76,5 @@ int	main(int argc, char *argv[])
 	printf("\n");
 	system("pause");
 	return(0);
+
 }

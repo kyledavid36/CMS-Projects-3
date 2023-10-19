@@ -127,7 +127,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Programming\Assignments\Assignment 1\Working A1\Queues.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sound.cpp" />
   </ItemGroup>
