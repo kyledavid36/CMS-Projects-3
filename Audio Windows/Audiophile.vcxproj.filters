@@ -18,6 +18,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="QueuesR.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="sound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -26,7 +29,7 @@
     <ClInclude Include="sound.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Programming\Assignments\Assignment 1\Working A1\Queues.h">
+    <ClInclude Include="QueuesR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
