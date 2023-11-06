@@ -13,17 +13,14 @@ Author: Amy Wentzell
 #include "sound.h"
 #include "Queues.h"
 
-void myFlushAll()
-{
-	int c;
-	do
-	{
-		c = getchar();
-
-	} while (c != EOF && c != '\n');
-}
 
 
+/**************************************************************************************
+menu()
+This is the function that defines whether the user is transmitting or receiving. If
+the user is transmitting, it also asks for the number of messages.
+
+**************************************************************************************/
 int menu()
 {
 	int pass = FALSE;
@@ -35,9 +32,9 @@ int menu()
 	
 	do
 	{
-		printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n");
+		printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n"); //Are you Tx or Rx?
 		scanf_s("%c", &x, 1);
-		while ((c = getchar()) != '\n' && c != EOF) {}
+		while ((c = getchar()) != '\n' && c != EOF) {} //flushing function, needed for chars and strings 
 		if (x == '1')
 		{
 			printf("How many messages would you like to send?(1 - 10):\n");
@@ -64,6 +61,12 @@ int menu()
 	return(amount);
 }
 
+
+/**************************************************************************************
+messageloop()
+For each message, ask the user for what type of message they are sending: audio or text.
+
+**************************************************************************************/
 int messageloop()
 {
 	char messType = {NULL};
@@ -88,24 +91,35 @@ int messageloop()
 	return(messType);
 }
 
+/**************************************************************************************
+getMessageFromUser()
+For text messages: get a string input from the user. this gives this back to main
+and is put in p->Data.message.
 
+**************************************************************************************/
 void getMessageFromUser(char* Message) {
 	
 
 	fflush(stdin); // Clear input buffer
 	printf("Please enter a message:\n");
-	scanf_s("%139[^\n]s", Message, 139);
+	scanf_s("%139[^\n]s", Message, 139); //get the message from the user, '\n' terminates the message.
 	//printf("%s", Message);
 
 }
 
+/**************************************************************************************
+getAudioFromUser()
+For audio messages; record n seconds of audio from the user, and assign it to
+a buffer. This is based on Michael's code, and is given back to main and is put into 
+p->Data.audio (audio is a short int *).
 
+**************************************************************************************/
 int getAudioFromUser(short* Buffer, long lBufSize)
 {
 
 	char save;
 	char replay;
-	char c;																// used to flush extra input
+	char c;						//used to flush extra input
 	FILE* f;
 	FILE* fp;
 
@@ -162,7 +176,7 @@ int getAudioFromUser(short* Buffer, long lBufSize)
 }
 
 
-void testAll()
+void testAll() //This is your function definition.
 {
 
 }
