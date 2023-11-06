@@ -45,8 +45,8 @@ COMMTIMEOUTS timeout;								// A commtimeout struct variable
 int main()
 {
 	
-	int numMessages = FALSE;
-	char messType = FALSE;
+	int numMessages = FALSE; //number of messages for sending
+	char messType = FALSE; //switch case variable for 'A' = audio or 'T' = text
 
 	extern short iBigBuf[];												// buffer
 	extern long  lBigBufSize;											// total number of samples
@@ -86,7 +86,7 @@ int main()
 				p = (link)malloc(sizeof(Node));
 				//run "text messages" function
 				getMessageFromUser(p->Data.message);
-				printf("\nYou entered a message: %s\n", p->Data.message);
+				printf("\nYou entered a message: %s\n", p->Data.message); //verify the input string
 				//TEST CHAR READING
 				//printf("%c", messType);
 				break;
