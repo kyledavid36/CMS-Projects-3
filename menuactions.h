@@ -1,5 +1,6 @@
 #pragma once
 
+//Prototypes
 void getMessageFromUser(char* Message);
 int menu();
 int messageloop();
