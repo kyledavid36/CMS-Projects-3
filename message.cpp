@@ -8,8 +8,6 @@
 #include <errno.h>
 #include <time.h>
 #include <windows.h>
-#include "message.h"
-#include "Queues.h"
 
 #define MAX_QUOTE_LENGTH 140
 

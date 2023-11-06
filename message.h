@@ -16,5 +16,3 @@ int* fquoteLength(int numQuotes, long int* Indices); // Function returns the sma
 
 // Function that gets q random quote from the FortuneCookies file 
 int GetMessageFromFile(char* buff, int iLen, int randNum, int numQuotes, long int* quoteIndices, int* quoteLengths);  // buff is a character array (need top pass the node element that is a character array) 
-
-void getMessageFromUser(char* Message);

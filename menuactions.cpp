@@ -10,27 +10,35 @@ Author: Amy Wentzell
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
-#include "message.h"
-#include "Queues.h"
-#include "menuactions.h"
 #include "sound.h"
-#include "RS232Comm.h"
+#include "Queues.h"
 
+void myFlushAll()
+{
+	int c;
+	do
+	{
+		c = getchar();
+
+	} while (c != EOF && c != '\n');
+}
 
 
 int menu()
 {
 	int pass = FALSE;
 	int amount = FALSE;
-	int x = FALSE; //Tx or Rx
+	char x = NULL; //Tx or Rx
+	char c;
 	printf("Coded Messaging System\n	By: Amy Wentzell and Kyle Dick\n	Version: 2023\n\n\n");
 	
 	
 	do
 	{
-		printf("Are you transmitting or receiving? (Sending = 1, Receiving = 0):\n");
-		scanf_s("%d", &x);
-		if (x == 1)
+		printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n");
+		scanf_s("%c", &x, 1);
+		while ((c = getchar()) != '\n' && c != EOF) {}
+		if (x == '1')
 		{
 			printf("How many messages would you like to send?(1 - 10):\n");
 			scanf_s("%d", &amount);
@@ -43,7 +51,7 @@ int menu()
 				printf("\nERROR: invalid input. Please retry.\n");
 			}
 		}
-		else if (x == 0)
+		else if (x == '0')
 		{
 			pass = TRUE;
 		}
@@ -60,12 +68,13 @@ int messageloop()
 {
 	char messType = {NULL};
 	int pass = FALSE;
+	char c;
 	
 	do
 	{
 		printf("\nWhat type of message would you like to send? (Audio = A, Text = T):\n");
 		scanf_s(" %c", &messType, 1);
-		
+		while ((c = getchar()) != '\n' && c != EOF) {}
 		if (messType == 'A' || messType == 'T')
 		{
 			pass = TRUE;
@@ -77,6 +86,17 @@ int messageloop()
 	}while (!pass);
 
 	return(messType);
+}
+
+
+void getMessageFromUser(char* Message) {
+	
+
+	fflush(stdin); // Clear input buffer
+	printf("Please enter a message:\n");
+	scanf_s("%139[^\n]s", Message, 139);
+	//printf("%s", Message);
+
 }
 
 
@@ -139,31 +159,6 @@ int getAudioFromUser(short* Buffer, long lBufSize)
 	}
 		
 
-}
-
-
-
-
-
-void getMessageFromUser(char* Message) {                                                      
-
-	//Message = (char*)malloc(MAX_QUOTE_LENGTH * sizeof(char));                 // Allocate the space
-	printf("\nNOTE: use dashes instead of spaces.");
-	printf("For example : \n\n 'Hello-world!-I-am-so-happy-to-meet-you.'\n\n");
-	printf("Please enter a message : \n");
-	scanf_s("%s", Message, MAX_QUOTE_LENGTH);
-	myFlushAll();
-
-}
-
-void myFlushAll()
-{
-	int c;
-	do
-	{
-		c = getchar();
-
-	} while (c != EOF && c != '\n');
 }
 
 

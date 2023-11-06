@@ -39,7 +39,7 @@ int nComBits = 8;									// Number of bits per frame
 COMMTIMEOUTS timeout;								// A commtimeout struct variable
 
 
-#define MAX_NUM_MESSAGES 1
+#define MAX_NUM_MESSAGES 10
 
 
 int main()
@@ -47,14 +47,16 @@ int main()
 	
 	int numMessages = FALSE;
 	char messType = FALSE;
-	numMessages = menu(); //get number of messages first
-
 
 	extern short iBigBuf[];												// buffer
 	extern long  lBigBufSize;											// total number of samples
 	short* iBigBufNew = (short*)malloc(lBigBufSize * sizeof(short));		// buffer used for reading recorded sound from file
 
 	link p, q; //p = message, q is for dequeueing
+
+
+	//TestAll();
+	numMessages = menu(); //get number of messages first
 
 	if (numMessages > 0)
 	{
@@ -68,12 +70,11 @@ int main()
 
 			case 'A':
 				//allocate memory
-				p = (link)malloc(numMessages * sizeof(Node));
+				//p = (link)malloc(sizeof(Node));
 				//run "audio messages" function
-				getAudioFromUser(p->Data.audio, lBigBufSize);
+				//getAudioFromUser(p->Data.audio, lBigBufSize);
 
-
-				AddToQueue(p);
+				//AddToQueue(p);
 
 
 				//TEST CHAR READING
@@ -82,21 +83,18 @@ int main()
 				break;
 			case 'T':
 				//allocate memory
-				p = (link)malloc(numMessages * sizeof(Node));
+				p = (link)malloc(sizeof(Node));
 				//run "text messages" function
 				getMessageFromUser(p->Data.message);
-				AddToQueue(p);
-
-
+				printf("\nYou entered a message: %s\n", p->Data.message);
 				//TEST CHAR READING
 				//printf("%c", messType);
 				break;
 			}
 
 		}
-
 		//DeQueue, SendMessage()
-		while (!IsQueueEmpty()) {
+		/*while (!IsQueueEmpty()) {
 
 			q = DeQueue();
 			//SendMessage(q);
@@ -104,10 +102,10 @@ int main()
 			/*initPort(&hComTx, COMPORT_Tx, nComRate, nComBits, timeout);						// Initialize the Tx port
 			Sleep(500);
 			outputToPort(&hComTx, q->Data.message, strlen(q->Data.message) + 1);			// Send string to port - include space for '\0' termination
-			Sleep(500);*/																		// Allow time for signal propagation on cable 
+			Sleep(500);																		// Allow time for signal propagation on cable 
 			printf("\n Quote is: %s\n", q->Data.message);
 			free(q);
-		}
+		}*/
 	}
 	else
 	{
@@ -129,7 +127,7 @@ int main()
 	CloseHandle(hComRx);										// Close the handle to Rx port 
 	CloseHandle(hComTx);*/										// Close the handle to Tx port 
 
-	system("pause");
+	//system("pause");
 
 	return(0);
 }

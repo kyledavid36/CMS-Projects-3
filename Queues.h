@@ -9,8 +9,12 @@ typedef struct node Node;
 typedef struct item Item;
 typedef Node* link;
 
+#define MAX_QUOTE_LENGTH 140
+#define MAX_NUM_MESSAGES 10
+
 struct item {
-	char message[MAX_QUOTE_LENGTH];
+	char message[MAX_QUOTE_LENGTH];   //messages
+	int MessLength; //message lengths
 	short int sid = 3;			// Sender ID
 	short int rid;			// Receiver ID
 	short *audio;			//audio buffer
