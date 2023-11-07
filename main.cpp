@@ -45,14 +45,13 @@ COMMTIMEOUTS timeout;								// A commtimeout struct variable
 int main()
 {
 	
-	int numMessages = FALSE; //number of messages for sending
-	char messType = FALSE; //switch case variable for 'A' = audio or 'T' = text
-
-	extern short iBigBuf[];												// buffer
-	extern long  lBigBufSize;											// total number of samples
-	short* iBigBufNew = (short*)malloc(lBigBufSize * sizeof(short));		// buffer used for reading recorded sound from file
+	int numMessages = FALSE;
+	char messType = FALSE;
 
 	link p, q; //p = message, q is for dequeueing
+
+	long  lBigBufSize = SAMPLES_SEC * RECORD_TIME;											// total number of samples
+	short* iBigBufNew = (short*)malloc(lBigBufSize * sizeof(short));		// buffer used for reading recorded sound from file
 
 
 	//TestAll();
@@ -70,11 +69,11 @@ int main()
 
 			case 'A':
 				//allocate memory
-				//p = (link)malloc(sizeof(Node));
+				p = (link)malloc(sizeof(Node));
 				//run "audio messages" function
-				//getAudioFromUser(p->Data.audio, lBigBufSize);
+				getAudioFromUser(lBigBufSize, p->Data.audio, iBigBufNew);
 
-				//AddToQueue(p);
+				AddToQueue(p);
 
 
 				//TEST CHAR READING
@@ -86,7 +85,11 @@ int main()
 				p = (link)malloc(sizeof(Node));
 				//run "text messages" function
 				getMessageFromUser(p->Data.message);
-				printf("\nYou entered a message: %s\n", p->Data.message); //verify the input string
+
+
+				//TEST string input
+				//printf("\nYou entered a message: %s\n", p->Data.message);
+				AddToQueue(p);
 				//TEST CHAR READING
 				//printf("%c", messType);
 				break;
@@ -94,7 +97,9 @@ int main()
 
 		}
 		//DeQueue, SendMessage()
-		/*while (!IsQueueEmpty()) {
+		
+		printf("\nDEQUEUING...\n\n");
+		while (!IsQueueEmpty()) {
 
 			q = DeQueue();
 			//SendMessage(q);
@@ -102,10 +107,13 @@ int main()
 			/*initPort(&hComTx, COMPORT_Tx, nComRate, nComBits, timeout);						// Initialize the Tx port
 			Sleep(500);
 			outputToPort(&hComTx, q->Data.message, strlen(q->Data.message) + 1);			// Send string to port - include space for '\0' termination
-			Sleep(500);																		// Allow time for signal propagation on cable 
+			Sleep(500);*/																		// Allow time for signal propagation on cable 
 			printf("\n Quote is: %s\n", q->Data.message);
+			//InitializePlayback();
+			//PlayBuffer(q->Data.audio, /*lSamples, what is this for our buffer? */);
+			//ClosePlayback();
 			free(q);
-		}*/
+		}
 	}
 	else
 	{
@@ -119,8 +127,8 @@ int main()
 		//printf("Length of received msg = %d", bytesRead);
 		p->Data.message[bytesRead] = '\0';
 		printf("\nMessage Received: %s\n\n", p->Data.message);*/					// Display message from port
+	
 	}
-
 	// Tear down both sides of the comm link
 	/*purgePort(&hComRx);											// Purge the Rx port
 	purgePort(&hComTx);											// Purge the Tx port

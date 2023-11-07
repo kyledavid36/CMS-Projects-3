@@ -3,6 +3,7 @@
 *  Modified by: myStudentName
 */
 #pragma once
+#include "sound.h"
 const int iLength = 140;
 
 typedef struct node Node;
@@ -12,12 +13,13 @@ typedef Node* link;
 #define MAX_QUOTE_LENGTH 140
 #define MAX_NUM_MESSAGES 10
 
+
 struct item {
 	char message[MAX_QUOTE_LENGTH];   //messages
 	int MessLength; //message lengths
 	short int sid = 3;			// Sender ID
 	short int rid;			// Receiver ID
-	short *audio;			//audio buffer
+	short audio[SAMPLES_SEC* RECORD_TIME];			//audio buffer
 	char priority;			// Priority of message
 	short int seqNum;		// Sequence number of a message
 	char later[25];
