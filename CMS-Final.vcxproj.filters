@@ -33,6 +33,12 @@
     <ClCompile Include="..\..\..\..\..\..\..\Downloads\RS232 - Windows\RS232 - Windows\RS232Comm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Downloads\audioTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Downloads\queuesTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="menuactions.h">

@@ -12,7 +12,7 @@ Details: Implementation - Contains functions for Windows sound API (sound record
 #include <math.h>
 #include "sound.h"
 
-// BUFFERS
+////// BUFFERS
 short iBigBuf[SAMPLES_SEC * RECORD_TIME];
 long  lBigBufSize = SAMPLES_SEC * RECORD_TIME;	// total number of samples
 
@@ -135,7 +135,7 @@ int	RecordBuffer(short *piBuf, long lBufSize)
 	WaveHeader.dwFlags &= ~(WHDR_BEGINLOOP | WHDR_ENDLOOP);
 
 	// Give the buffer to the recording device to fill.
-	mmErr = waveInAddBuffer(HWaveIn, &WaveHeader, sizeof(WAVEHDR));
+	mmErr = waveInAddBuffer(HWaveIn, &WaveHeader, sizeof(WAVEHDR)); //Access violation reading location
 	// Record the buffer. This is NON-blocking.
 	mmErr = waveInStart(HWaveIn);
 	// wait for completion

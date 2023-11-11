@@ -127,6 +127,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\..\..\Downloads\audioTest.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\..\Downloads\queuesTest.cpp" />
     <ClCompile Include="..\..\..\..\..\..\..\Downloads\RS232 - Windows\RS232 - Windows\RS232Comm.cpp" />
     <ClCompile Include="..\..\..\..\ESE-ProgrammingII\Assignment1\Ass.1_AWentzell\Queues.cpp" />
     <ClCompile Include="main.cpp" />

@@ -1,6 +1,9 @@
 #pragma once
 
-int menu();
+void getMessageFromUser(char* Message);
+int menu(int TextBufSize);
 int messageloop();
 void myFlushAll();
-int getAudioFromUser(short* Buffer, long lBufSize);
+int getAudioFromUser(long lBigBufSize, short* iBigBuf);
+int TextSettings(int TextBufSize);
+//void TestAll();
