@@ -12,6 +12,9 @@ Author: Amy Wentzell
 #include <windows.h>
 #include "sound.h"
 #include "Queues.h"
+#include "RS232Comm.h"
+#include "audioTest.h"
+#include "queuesTest.h"
 
 void myFlushAll()
 {
@@ -73,97 +76,7 @@ int TextSettings(int TextBufSize)
 
 
 
-int menu(int TextBufSize)
-{
-	int pass = FALSE;
-	int amount = FALSE;
-	char x = NULL; //Tx or Rx
-	char c;
-	char setting = '0';
-	char loc;
 
-	char options[6][25] = { "Test Functionality","Audio Settings", "Text Settings", "Tx/Rx with Queues","Tx/Rx without Queues", "Exit" };
-
-	printf("Coded Messaging System\n	By: Amy Wentzell and Kyle Dick\n	Version: 2023\n\n\n");
-
-	do
-	{
-
-		switch (setting)
-		{
-			
-			case '0':
-				printf("\nWelcome! Choose your setting: \n\n");
-				for (int i = 1; i < 7; i++)
-				{
-					printf("(%d)	", i);
-					for (int j = 0; j < 25; j++)
-					{
-						printf("%c", options[i-1][j]);
-					}
-					printf("\n");
-				}
-				printf("Choice:\n");
-				scanf_s("%c", &loc, 1);
-				while ((c = getchar()) != '\n' && c != EOF) {}
-				setting = loc;
-				break;
-			case '1':
-				// TEST
-				setting = '0';
-				break;
-			case '2':
-				//AudioSettings
-				setting = '0';
-				break;
-			case '3':
-				//Text Settings
-
-				TextBufSize = TextSettings(TextBufSize);
-				setting = '0';
-				printf("\n			Setting is %c, TextBufSize is %d.\n", setting, TextBufSize);
-				break;
-			case '4':
-				printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n");
-				scanf_s("%c", &x, 1);
-				while ((c = getchar()) != '\n' && c != EOF) {}
-				if (x == '1')
-				{
-					printf("How many messages would you like to send?(1 - 10):\n");
-					scanf_s("%d", &amount);
-					if (1 <= amount && amount <= 10)
-					{
-						pass = TRUE;
-					}
-					else
-					{
-						printf("\nERROR: invalid input. Please retry.\n");
-					}
-				}
-				else if (x == '0')
-				{
-					pass = TRUE;
-				}
-				else
-				{
-					printf("\nERROR: invalid input. Please retry.\n");
-				}
-				break;
-			case '5':
-				//Send one audio or text message
-				//ImDroppingOut();
-				break;
-			case '6':
-				exit(0);
-				break;
-			default:
-				break;
-			}
-			
-	} while (!pass);
-
-	return(amount);
-}
 
 
 int messageloop()
@@ -192,7 +105,7 @@ int messageloop()
 
 
 void getMessageFromUser(char* Message) {
-	
+
 
 	fflush(stdin); // Clear input buffer
 	printf("Please enter a message:\n");
@@ -202,7 +115,7 @@ void getMessageFromUser(char* Message) {
 }
 
 
-int getAudioFromUser(long lBigBufSize, short *iBigBuf)
+int getAudioFromUser(long lBigBufSize, short* iBigBuf)
 {
 
 	char save;
@@ -260,14 +173,134 @@ int getAudioFromUser(long lBigBufSize, short *iBigBuf)
 	}
 
 	printf("\n");
-		
+
 
 }
+
+void NoQueues(long lBigBufSize, short *iBigBuf, char *Message)
+{
+	int messagetype;
+
+
+	messagetype = messageloop();
+	if (messagetype == 'A')
+	{
+		getAudioFromUser(lBigBufSize, iBigBuf);
+	}
+	else if (messagetype == 'T')
+	{
+		getMessageFromUser(Message);
+	}
+	
+}
+
+
 
 
 void testAll()
 {
-	//audioTest();
-	//testQueues();
+	audioTest();
+	queuesTest();
 }
 
+
+int menu(int TextBufSize, long lBigBufSize, short *iBigBuf, char *Message)
+{
+	int pass = FALSE;
+	int amount = FALSE;
+	char x = NULL; //Tx or Rx
+	char c;
+	char setting = '0'; //where you are in the menu
+	char loc;
+	
+
+	char options[6][25] = { "Test Functionality","Audio Settings", "Text Settings", "Tx/Rx with Queues","Tx/Rx without Queues", "Exit" };
+
+	printf("Coded Messaging System\n	By: Amy Wentzell and Kyle Dick\n	Version: 2023\n\n\n");
+
+	do
+	{
+
+		switch (setting)
+		{
+
+		case '0':
+			printf("\nWelcome! Choose your setting: \n\n");
+			for (int i = 1; i < 7; i++)
+			{
+				printf("(%d)	", i);
+				for (int j = 0; j < 25; j++)
+				{
+					printf("%c", options[i - 1][j]);
+				}
+				printf("\n");
+			}
+			printf("Choice:\n");
+			scanf_s("%c", &loc, 1);
+			while ((c = getchar()) != '\n' && c != EOF) {}
+			setting = loc;
+			break;
+		case '1':
+			// TEST
+			testAll();
+			setting = '0';
+			break;
+		case '2':
+			//AudioSettings
+			setting = '0';
+			break;
+		case '3':
+			//Text Settings
+
+			TextBufSize = TextSettings(TextBufSize);
+			setting = '0';
+			printf("\n			Setting is %c, TextBufSize is %d.\n", setting, TextBufSize);
+			break;
+		case '4':
+			printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n");
+			scanf_s("%c", &x, 1);
+			while ((c = getchar()) != '\n' && c != EOF) {}
+			if (x == '1')
+			{
+				printf("How many messages would you like to send?(1 - 10):\n");
+				scanf_s("%d", &amount);
+				if (2 <= amount && amount <= 10)
+				{
+					pass = TRUE;
+				}
+				else if (amount == 1)
+				{
+					setting = '5';
+					pass = TRUE;
+				}
+				else
+				{
+					printf("\nERROR: invalid input. Please retry.\n");
+				}
+			}
+			else if (x == '0')
+			{
+				pass = TRUE;
+			}
+			else
+			{
+				printf("\nERROR: invalid input. Please retry.\n");
+			}
+			break;
+		case '5':
+			//Send one audio or text message
+			NoQueues(lBigBufSize, iBigBuf, Message);
+			amount = 1;
+			pass = TRUE;
+			break;
+		case '6':
+			exit(0);
+			break;
+		default:
+			break;
+		}
+
+	} while (!pass);
+
+	return(amount);
+}

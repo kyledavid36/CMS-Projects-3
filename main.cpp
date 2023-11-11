@@ -62,20 +62,20 @@ int main()
 	
 	int numMessages = FALSE;
 	char messType = FALSE;
-
-	link p, q; //p = message, q is for dequeueing
+	int Received = 1;																		//number of messages the receiving end is looking for.
+	link p, q;																				//p = message, q is for dequeueing
 
 	long  lBigBufSize = SAMPLES_SEC * RECORD_TIME;											// total number of samples
-	//short* iBigBufNew = (short*)malloc(lBigBufSize * sizeof(short));		// buffer used for reading recorded sound from file
-
+	short* iBigBufNew = (short*)malloc(lBigBufSize * sizeof(short));						// buffer used for reading recorded sound from file
+	char* Text = (char*)malloc(TextBufSize * sizeof(char));									// Text message buffer for NoQueues()
 
 	//TestAll();
-	numMessages = menu(TextBufSize); //get number of messages first
+	numMessages = menu(TextBufSize, lBigBufSize, iBigBufNew, Text); //get number of messages first
 
-	if (numMessages > 0)
+	if (numMessages > 1)
 	{
 		/**********************************TRANSMITTING END**********************************/
-		
+		Received = numMessages;
 		for (int i = 0; i < numMessages; i++)
 		{
 			messType = messageloop(); // get message type for each message needed by the user
@@ -123,9 +123,9 @@ int main()
 			q = DeQueue();
 			//SendMessage(q);
 			// Transmit side 
-			initPort(&hComTx, COMPORT_Tx, nComRate, nComBits, timeout);						// Initialize the Tx port
+			initPort(&hComTx, COMPORT_Tx, nComRate, nComBits, timeout);					// Initialize the Tx port
 			Sleep(500);
-			//outputToPort(&hComTx, q->Data.message, strlen(q->Data.message) + 1);			// Send string to port - include space for '\0' termination
+			//outputToPort(&hComTx, q->Data.message, strlen(q->Data.message) + 1);		// Send string to port - include space for '\0' termination
 			outputToPort(&hComTx, q->Data.audio, sizeof(q->Data.audio));
 			//Sleep(500);
 			//outputToPort(&hComTx, q->Data.audio, sizeof(q->Data.audio) + 1);
@@ -134,38 +134,65 @@ int main()
 			free(q);
 		}
 	}
+	else if (numMessages == 1)
+	{
+		initPort(&hComTx, COMPORT_Tx, nComRate, nComBits, timeout);						// Initialize the Tx port
+		Sleep(500);
+		outputToPort(&hComTx, Text, TextBufSize + 1);									// Send string to port - include space for '\0' termination
+		//outputToPort(&hComTx, iBigBufNew, lBigBufSize);								// Send audio to port
+		//outputToPort(&hComTx, q->Data.audio, sizeof(q->Data.audio));
+		//Sleep(500);
+		//outputToPort(&hComTx, q->Data.audio, sizeof(q->Data.audio) + 1);
+		Sleep(500);																		// Allow time for signal propagation on cable 
+		//printf("\n Quote is: %s\n", q->Data.message);
+	}
 	else
 	{
 		/************************************RECEIVING END***********************************/
-		
-		initPort(&hComRx, COMPORT_Rx, nComRate, nComBits, timeout);				// Initialize the Rx port
-		Sleep(500);
-		p = (link)malloc(sizeof(Node));
-		DWORD bytesRead;
-		//bytesRead = inputFromPort(&hComRx, p->Data.message, BUFSIZE);			// Receive string from port
-		//p->Data.message[bytesRead] = '\0';
-		AddToQueue(p);
-		//printf("Length of received msg = %d", bytesRead);
-
-		while (!IsQueueEmpty()) {
-			
-			q = DeQueue();
-			printf("\nMessage Received: %s\n\n", q->Data.message);						// Display message from port
-
-			/*InitializePlayback();
-			PlayBuffer(q->Data.audio, lBigBufSize);
-			ClosePlayback();*/
-			free(q);
+		if (Received == 1)
+		{
+			initPort(&hComRx, COMPORT_Rx, nComRate, nComBits, timeout);					// Initialize the Rx port
+			Sleep(500);
+			DWORD bytesRead;
+			bytesRead = inputFromPort(&hComRx, Text, BUFSIZE);							// Receive string from port
+			Text[bytesRead] = '\0';
+			printf("\nMessage Received: %s\n\n", Text);
 		}
+		else
+		{
+
+			initPort(&hComRx, COMPORT_Rx, nComRate, nComBits, timeout);					// Initialize the Rx port
+			Sleep(500);
+			p = (link)malloc(sizeof(Node));
+			DWORD bytesRead;
+			bytesRead = inputFromPort(&hComRx, Text, BUFSIZE);							// Receive string from port
+			Text[bytesRead] = '\0';
+			//AddToQueue(p);
+			//printf("Length of received msg = %d", bytesRead);
+			printf("\nMessage Received: %s\n\n", p->Data.message);						// Display message from port
+			while (!IsQueueEmpty()) {
+
+				q = DeQueue();
+				printf("\nMessage Received: %s\n\n", q->Data.message);					// Display message from port
+
+				/*InitializePlayback();
+				PlayBuffer(q->Data.audio, lBigBufSize);
+				ClosePlayback();*/
+				free(q);
+			}
+		}
+
 	}
 	// Tear down both sides of the comm link
 	purgePort(&hComRx);										// Purge the Rx port
-	purgePort(&hComTx);											// Purge the Tx port
-	CloseHandle(hComRx);										// Close the handle to Rx port 
+	purgePort(&hComTx);										// Purge the Tx port
+	CloseHandle(hComRx);									// Close the handle to Rx port 
 	CloseHandle(hComTx);									// Close the handle to Tx port 
 	
-	//free(iBigBufNew);
+	free(iBigBufNew);
+	free(Text);
 	system("pause");
+
 
 	return(0);
 }

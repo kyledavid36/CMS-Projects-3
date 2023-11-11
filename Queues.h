@@ -41,4 +41,5 @@ void traverseR(link h, void (*visit)(link));
 void visit(link h);
 int count(link x);
 link deleteR(link parent, link child, Item v);
+int queuesTest();
 

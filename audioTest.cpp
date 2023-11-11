@@ -8,7 +8,7 @@ Details: Testing mainline for Windows sound API
 #include <stdio.h>
 #include <windows.h>
 
-int	audioTest(int argc, char *argv[])
+int	audioTest()
 {
 	extern short iBigBuf[];												// buffer
 	extern long  lBigBufSize;											// total number of samples
