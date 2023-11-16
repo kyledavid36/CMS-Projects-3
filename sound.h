@@ -30,3 +30,4 @@ void CloseRecording(void);
 // Support functions for Playback functions (updated 2021)
 void SetupFormat(WAVEFORMATEX* wf);			// Used by InitializePlayback()					
 int WaitOnHeader(WAVEHDR* wh, char cDit);	// Used by Playbuffer()
+int	audioTest(int argc, char* argv[]);

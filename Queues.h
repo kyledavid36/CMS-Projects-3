@@ -19,7 +19,7 @@ struct item {
 	int MessLength; //message lengths
 	short int sid = 3;			// Sender ID
 	short int rid;			// Receiver ID
-	short audio[SAMPLES_SEC* RECORD_TIME];			//audio buffer
+	short audio[SAMPLES_SEC* RECORD_TIME * 2];			//audio buffer
 	char priority;			// Priority of message
 	short int seqNum;		// Sequence number of a message
 	char later[25];
@@ -41,4 +41,5 @@ void traverseR(link h, void (*visit)(link));
 void visit(link h);
 int count(link x);
 link deleteR(link parent, link child, Item v);
+int queuesTest();
 

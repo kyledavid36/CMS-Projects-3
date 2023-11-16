@@ -129,16 +129,20 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\..\..\Downloads\RS232 - Windows\RS232 - Windows\RS232Comm.cpp" />
     <ClCompile Include="..\..\..\..\ESE-ProgrammingII\Assignment1\Ass.1_AWentzell\Queues.cpp" />
+    <ClCompile Include="audioTest.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="menuactions.cpp" />
     <ClCompile Include="message.cpp" />
+    <ClCompile Include="queuesTest.cpp" />
     <ClCompile Include="sound.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\..\Downloads\RS232 - Windows\RS232 - Windows\RS232Comm.h" />
     <ClInclude Include="..\..\..\..\ESE-ProgrammingII\Assignment1\Ass.1_AWentzell\message.h" />
+    <ClInclude Include="audioTest.h" />
     <ClInclude Include="menuactions.h" />
     <ClInclude Include="Queues.h" />
+    <ClInclude Include="queuesTest.h" />
     <ClInclude Include="sound.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
