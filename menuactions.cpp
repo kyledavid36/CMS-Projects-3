@@ -78,8 +78,6 @@ int TextSettings(int TextBufSize)
 
 
 
-
-
 int messageloop()
 {
 	char messType = {NULL};
@@ -209,6 +207,7 @@ int menu(int TextBufSize, long lBigBufSize, short *iBigBuf, char *Message)
 {
 	int pass = FALSE;
 	int amount = FALSE;
+	int IAmR = FALSE;
 	char x = NULL; //Tx or Rx
 	char c;
 	char setting = '0'; //where you are in the menu
@@ -281,6 +280,7 @@ int menu(int TextBufSize, long lBigBufSize, short *iBigBuf, char *Message)
 			}
 			else if (x == '0')
 			{
+				IAmR = TRUE;
 				pass = TRUE;
 			}
 			else
@@ -297,11 +297,13 @@ int menu(int TextBufSize, long lBigBufSize, short *iBigBuf, char *Message)
 			{
 				NoQueues(lBigBufSize, iBigBuf, Message);
 				//printf("%s sending message...\n", Message);
+				amount = 1;
 				pass = TRUE;
 			}
 			else if (x == '0')
 			{
 				amount = 0;
+				IAmR = TRUE;
 				pass = TRUE;
 			}
 			else
@@ -318,5 +320,5 @@ int menu(int TextBufSize, long lBigBufSize, short *iBigBuf, char *Message)
 
 	} while (!pass);
 
-	return(amount);
+	return(IAmR,amount);
 }
