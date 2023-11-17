@@ -296,6 +296,7 @@ int menu(int TextBufSize, long lBigBufSize, short *iBigBuf, char *Message)
 			if (x == '1')
 			{
 				NoQueues(lBigBufSize, iBigBuf, Message);
+				//printf("%s sending message...\n", Message);
 				pass = TRUE;
 			}
 			else if (x == '0')

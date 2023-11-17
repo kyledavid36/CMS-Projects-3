@@ -59,7 +59,7 @@ long int* fquoteIndices(int numQuotes)
 	char a = NULL;
 	long int counter = 0;
 	long int r = 0;
-	int tempIndex;
+	int tempIndex = NULL;
 	long int* Indices = NULL;
 	long int i = 0;
 	//Indices = (long int*)malloc(numQuotes * sizeof(long int));

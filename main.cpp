@@ -67,8 +67,8 @@ int main()
 
 	long  lBigBufSize = SAMPLES_SEC * RECORD_TIME;											// total number of samples
 	short* iBigBufNew = (short*)malloc(lBigBufSize * sizeof(short));						// buffer used for reading recorded sound from file
-	char Text[141];									// Text message buffer for NoQueues()
-
+	char *Text = (char*)malloc(BUFSIZE *sizeof(char));									// Text message buffer for NoQueues()
+	//char *RText = (char*)malloc((BUFSIZE) * sizeof(char));							//Text message buffer for receiver for NoQueues()
 	//TestAll();
 	numMessages = menu(TextBufSize, lBigBufSize, iBigBufNew, Text); //get number of messages first
 
@@ -136,6 +136,8 @@ int main()
 	}
 	else if (numMessages == 1)
 	{
+		/*********************TRANSMITTTING END, NO QUEUES (kyle here)************************/
+		
 		initPort(&hComTx, COMPORT_Tx, nComRate, nComBits, timeout);						// Initialize the Tx port
 		Sleep(500);
 		outputToPort(&hComTx, Text, TextBufSize + 1);									// Send string to port - include space for '\0' termination
@@ -159,9 +161,9 @@ int main()
 			printf("\nMessage Received: %s\n\n", Text);
 	
 			//bytesRead = inputFromPort(&hComRx, iBigBufNew, lBigBufSize);				// Receive audio from port
-			/*InitializePlayback();
-			PlayBuffer(q->Data.audio, lBigBufSize);
-			ClosePlayback();*/
+			//InitializePlayback();
+			//PlayBuffer(iBigBufNew, lBigBufSize);
+			//ClosePlayback();
 		}
 		else
 		{
@@ -196,6 +198,8 @@ int main()
 	
 
 	free(iBigBufNew);
+	free(Text);
+	//free(RText);
 	system("pause");
 	
 	return(0);
