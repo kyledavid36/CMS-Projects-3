@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>(C:\Users\m3lan\OneDrive\Desktop\ESE-Year-2\ESE-ProjectsIII\ProjectsII-CMS\CMS-Final\CMS-Week7\CMS-FINAL\Header.h)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,9 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\A3-KylesCopy\treefunc.cpp" />
     <ClCompile Include="..\..\CMS-Final\audioTest.cpp" />
-    <ClCompile Include="..\..\CMS-Final\main.cpp" />
     <ClCompile Include="..\..\CMS-Final\menu.cpp" />
     <ClCompile Include="..\..\CMS-Final\menuactions.cpp" />
     <ClCompile Include="..\..\CMS-Final\message.cpp" />
@@ -139,6 +138,7 @@
     <ClCompile Include="buffer.c" />
     <ClCompile Include="compression.c" />
     <ClCompile Include="huffman.c" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="rle.c" />
     <ClCompile Include="RS232Comm.cpp">
       <DeploymentContent>true</DeploymentContent>
@@ -160,7 +160,6 @@
     <ClInclude Include="rle.h" />
     <ClInclude Include="RS232Comm.h" />
     <ClInclude Include="sound.h" />
-    <ClInclude Include="treefunc.h" />
     <ClInclude Include="tx_rx_Audio.h" />
     <ClInclude Include="tx_rx_Text.h" />
   </ItemGroup>

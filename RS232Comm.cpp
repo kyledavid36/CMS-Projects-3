@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "RS232Comm.h"
+#include "Header.h"
+
 #define EX_FATAL 1
 
 // Main functions

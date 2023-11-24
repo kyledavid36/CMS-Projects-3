@@ -14,7 +14,7 @@ Authors: Amy Wentzell and Kyle Dick
 #include "menu.h"
 #include "menuactions.h"
 #include "sound.h"
-
+#include "Header.h"
 
 
 //

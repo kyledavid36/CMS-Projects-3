@@ -16,8 +16,7 @@ Author: Amy Wentzell
 #include "RS232Comm.h"
 #include "audioTest.h"
 #include "queuesTest.h"
-//#include "treefunc.h"
-//#include "Header.h"
+#include "Header.h"
 
 void myFlushAll()
 {
@@ -94,40 +93,40 @@ void mainMenu(int *menuchoice, char options[25][40], int* txrx)
 
 void QueuesTest(const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wchar_t* COMPORT1, wchar_t* COMPORT2, int nComRate, int nComBits, COMMTIMEOUTS timeout)
 {
-	//link p, q;
-	//int randnum;
-	//char* buffer;
-	//Header *Queues; //QueuesTest Header
+	link p, q;
+	int randnum;
+	char* buffer;
+	Header Queues; //QueuesTest Header
 
 
-	//Queues.sid = 1;
-	//Queues.rid = 0;
-	//Queues.payloadSize = BUFSIZE;		// Number of bytes in payload after this header
-	//Queues.payLoadType = 0;			// 0: Text, 1: Audio, 2: Image etc.
-	//Queues.encryption = 0;			// 0: None, 1: XOR,	  2: Vigenere	3: Both
-	//Queues.compression = 0;			// 0: None, 1: RLE,	  2: Huffman,	3: Both
-
-
-
+	Queues.sid = 1;
+	Queues.rid = 0;
+	Queues.payloadSize = BUFSIZE;		// Number of bytes in payload after this header
+	Queues.payLoadType = 0;			// 0: Text, 1: Audio, 2: Image etc.
+	Queues.encryption = 0;			// 0: None, 1: XOR,	  2: Vigenere	3: Both
+	Queues.compression = 0;			// 0: None, 1: RLE,	  2: Huffman,	3: Both
 
 
 
-	//for (int i = 0; i < 10; i++)
-	//{
-	//	if (*txrx == 1)
-	//	{
-	//		
-	//		randnum = frandNum(0, fnumQuotes());
-	//		GetMessageFromFile(buffer, 140, randnum, fnumQuotes(), fquoteIndices(fnumQuotes()), fquoteLength(fnumQuotes(), fquoteIndices(fnumQuotes())));
-	//		transmit(&Queues, buffer, &hComTx, COMPORT1, nComRate, nComBits, timeout);
-	//	}
-	//	else
-	//	{
-	//		p = (link)malloc(sizeof(Node));
-	//		receive(&Queues, p->Data.message, &hComRx, COMPORT2, nComRate, nComBits, timeout);
-	//		AddToQueue(p);
-	//	}
-	//}
+
+
+
+	for (int i = 0; i < 10; i++)
+	{
+		if (*txrx == 1)
+		{
+			
+			randnum = frandNum(0, fnumQuotes());
+			GetMessageFromFile(buffer, 140, randnum, fnumQuotes(), fquoteIndices(fnumQuotes()), fquoteLength(fnumQuotes(), fquoteIndices(fnumQuotes())));
+			transmit(&Queues, buffer, &hComTx, COMPORT1, nComRate, nComBits, timeout);
+		}
+		else
+		{
+			p = (link)malloc(sizeof(Node));
+			receive(&Queues, p->Data.message, &hComRx, COMPORT2, nComRate, nComBits, timeout);
+			AddToQueue(p);
+		}
+	}
 
 
 }
