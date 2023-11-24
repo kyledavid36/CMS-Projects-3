@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include "menuactions.h"
+#include "Queues.h"
 #include "RS232Comm.h"
 #include "sound.h"
 
@@ -84,6 +85,8 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *com1, int *co
 {
 	int woohoo = FALSE;
 	char *Message = (char*)malloc(*TextBufSize * sizeof(char));
+	link p, q;
+
 
 	char* MessageType;
 	char Text = 'T';
@@ -144,7 +147,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *com1, int *co
 			break;
 			/*****************************	QUEUES TEST	*****************************/
 		case 2:
-			//QueuesTest(BUFSIZE, txrx, &hComTx, &hComRx, COMPORT_Tx, COMPORT_Rx, nComRate, nComBits, timeout);
+			QueuesTest(140, txrx, &hComTx, &hComRx, COMPORT_Tx, COMPORT_Rx, nComRate, nComBits, timeout, p);
 			
 			*menuchoice = 0;
 			break;
@@ -204,6 +207,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *com1, int *co
 			break;
 			/**********************		SHOW QUEUE		******************************/
 		case 12:
+			ShowQueue(q);
 			*menuchoice = 0;
 			break;
 			/***************		ERROR DETECTION AND CORRECTION		*******************/

@@ -91,9 +91,8 @@ void mainMenu(int *menuchoice, char options[25][40], int* txrx)
 	
 }
 
-void QueuesTest(const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wchar_t* COMPORT1, wchar_t* COMPORT2, int nComRate, int nComBits, COMMTIMEOUTS timeout)
+void QueuesTest(const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wchar_t* COMPORT1, wchar_t* COMPORT2, int nComRate, int nComBits, COMMTIMEOUTS timeout, link p)
 {
-	link p, q;
 	int randnum;
 	char* buffer;
 	Header Queues; //QueuesTest Header
@@ -118,12 +117,13 @@ void QueuesTest(const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wc
 			
 			randnum = frandNum(0, fnumQuotes());
 			GetMessageFromFile(buffer, 140, randnum, fnumQuotes(), fquoteIndices(fnumQuotes()), fquoteLength(fnumQuotes(), fquoteIndices(fnumQuotes())));
-			transmit(&Queues, buffer, &hComTx, COMPORT1, nComRate, nComBits, timeout);
+			transmit(&Queues, buffer, hComTx, COMPORT1, nComRate, nComBits, timeout);
+			Sleep(4500);
 		}
 		else
 		{
 			p = (link)malloc(sizeof(Node));
-			receive(&Queues, p->Data.message, &hComRx, COMPORT2, nComRate, nComBits, timeout);
+			receive(&Queues, (void**)p->Data.message, hComRx, COMPORT2, nComRate, nComBits, timeout);
 			AddToQueue(p);
 		}
 	}
@@ -132,7 +132,19 @@ void QueuesTest(const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wc
 }
 
 
+void ShowQueues(link q)
+{
+	
+	printf("\n	The number of nodes sent  is %d.",count(returnHead()));
+	//More to come lol
 
+	while (!IsQueueEmpty)
+	{
+		q = DeQueue();
+		printf("MESSAGE:\n\n	%s\n", q->Data.message);
+		free(q);
+	}
+}
 
 
 

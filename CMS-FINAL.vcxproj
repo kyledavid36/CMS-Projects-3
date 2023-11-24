@@ -128,46 +128,40 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\CMS-Final\audioTest.cpp" />
-    <ClCompile Include="..\..\CMS-Final\menu.cpp" />
-    <ClCompile Include="..\..\CMS-Final\menuactions.cpp" />
-    <ClCompile Include="..\..\CMS-Final\message.cpp" />
-    <ClCompile Include="..\..\CMS-Final\Queues.cpp" />
-    <ClCompile Include="..\..\CMS-Final\queuesTest.cpp" />
-    <ClCompile Include="..\..\CMS-Final\sound.cpp" />
+    <ClCompile Include="audioTest.cpp" />
     <ClCompile Include="buffer.c" />
     <ClCompile Include="compression.c" />
     <ClCompile Include="huffman.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="menu.cpp" />
+    <ClCompile Include="menuactions.cpp" />
+    <ClCompile Include="message.cpp" />
+    <ClCompile Include="Queues.cpp" />
+    <ClCompile Include="queuesTest.cpp" />
     <ClCompile Include="rle.c" />
     <ClCompile Include="RS232Comm.cpp">
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="sound.cpp" />
     <ClCompile Include="tx_rx_Audio.cpp" />
     <ClCompile Include="tx_rx_Text.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\CMS-Final\audioTest.h" />
-    <ClInclude Include="..\..\CMS-Final\menu.h" />
-    <ClInclude Include="..\..\CMS-Final\menuactions.h" />
-    <ClInclude Include="..\..\CMS-Final\message.h" />
-    <ClInclude Include="..\..\CMS-Final\Queues.h" />
-    <ClInclude Include="..\..\CMS-Final\queuesTest.h" />
+    <ClInclude Include="audioTest.h" />
     <ClInclude Include="buffer.h" />
     <ClInclude Include="compression.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="huffman.h" />
+    <ClInclude Include="menu.h" />
+    <ClInclude Include="menuactions.h" />
+    <ClInclude Include="message.h" />
+    <ClInclude Include="Queues.h" />
+    <ClInclude Include="queuesTest.h" />
     <ClInclude Include="rle.h" />
     <ClInclude Include="RS232Comm.h" />
     <ClInclude Include="sound.h" />
     <ClInclude Include="tx_rx_Audio.h" />
     <ClInclude Include="tx_rx_Text.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\CMS-Final\recording.dat" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\CMS-Final\FortuneCookies.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
