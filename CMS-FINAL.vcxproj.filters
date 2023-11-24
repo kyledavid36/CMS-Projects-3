@@ -104,13 +104,13 @@
     <ClInclude Include="sound.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="huffman.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Header.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\A3-KylesCopy\treefunc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\A3-KylesCopy\treenode.h">
+    <ClInclude Include="treefunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -147,10 +147,6 @@
     <ClCompile Include="tx_rx_Text.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\A3-KylesCopy\treefunc.h">
-      <DeploymentContent>false</DeploymentContent>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\A3-KylesCopy\treenode.h" />
     <ClInclude Include="..\..\CMS-Final\audioTest.h" />
     <ClInclude Include="..\..\CMS-Final\menu.h" />
     <ClInclude Include="..\..\CMS-Final\menuactions.h" />
@@ -159,12 +155,12 @@
     <ClInclude Include="..\..\CMS-Final\queuesTest.h" />
     <ClInclude Include="buffer.h" />
     <ClInclude Include="compression.h" />
-    <ClInclude Include="Header.h">
-      <DeploymentContent>false</DeploymentContent>
-    </ClInclude>
+    <ClInclude Include="Header.h" />
+    <ClInclude Include="huffman.h" />
     <ClInclude Include="rle.h" />
     <ClInclude Include="RS232Comm.h" />
     <ClInclude Include="sound.h" />
+    <ClInclude Include="treefunc.h" />
     <ClInclude Include="tx_rx_Audio.h" />
     <ClInclude Include="tx_rx_Text.h" />
   </ItemGroup>
