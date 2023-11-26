@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-	int compression();
+	int compression(char *inputfilename, unsigned char *in);
 
 #ifdef __cplusplus
 }

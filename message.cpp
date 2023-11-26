@@ -51,7 +51,7 @@ int fnumQuotes(void) {
 
 
 // Function returns an array that indicates the start of every quote in the file (number of characters from the start of the file) 
-long int* fquoteIndices(int numQuotes)
+long int* fquoteIndices(int numQuotes, long int *Indices)
 {
 	FILE* fp;
 	char c = NULL;
@@ -60,7 +60,7 @@ long int* fquoteIndices(int numQuotes)
 	long int counter = 0;
 	long int r = 0;
 	int tempIndex = NULL;
-	long int* Indices = NULL;
+	//long int* Indices;
 	long int i = 0;
 	//Indices = (long int*)malloc(numQuotes * sizeof(long int));
 
@@ -89,7 +89,7 @@ long int* fquoteIndices(int numQuotes)
 		}
 		//printf("There were %d quotes in the file", counter);
 		fclose(fp);
-		return(Indices);
+		return(0);
 	}
 	else {
 		printf("\nError: Failed to open file\n");
@@ -100,9 +100,9 @@ long int* fquoteIndices(int numQuotes)
 }
 
 // Function returns the smaller of the actual quote length or MAX_QUOTE_LENGTH
-int* fquoteLength(int numQuotes, long int* Indices)
+int* fquoteLength(int numQuotes, long int* Indices, int *LengthMessage)
 {
-	int* LengthMessage = NULL;
+	
 	//LengthMessage = (int*)malloc((numQuotes) * sizeof(int));
 	char c;
 	long int counter = 0;
@@ -135,6 +135,7 @@ int* fquoteLength(int numQuotes, long int* Indices)
 			LengthMessage[i] = counter - 1;
 		}
 		fclose(fp);
+
 		for (int j = 0; j < numQuotes; j++)
 		{
 			if (LengthMessage[j] > MAX_QUOTE_LENGTH)
@@ -148,7 +149,7 @@ int* fquoteLength(int numQuotes, long int* Indices)
 		printf("\nError: Failed to open file\n");
 		fclose(fp);
 	}
-	return(LengthMessage);
+	return(0);
 }
 
 

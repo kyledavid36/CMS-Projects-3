@@ -53,7 +53,7 @@ int* txrx;
 
 ////Physical ports
 wchar_t COMPORT_Rx[] = L"COM6";						// Check device manager after plugging device in and change this port
-wchar_t COMPORT_Tx[] = L"COM4";						// Check device manager after plugging device in and change this port
+wchar_t COMPORT_Tx[] = L"COM7";						// Check device manager after plugging device in and change this port
 // --> If COM# is larger than 9 then use the following syntax--> "\\\\.\\COM10"
 
 // Communication variables and parameters

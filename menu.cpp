@@ -4,6 +4,9 @@
 #include "Queues.h"
 #include "RS232Comm.h"
 #include "sound.h"
+#include "compression.h"
+#include "rle.h"
+#include "huffman.h"
 
 // Declare constants, variables and communication parameters
 extern const int BUFSIZE;							// Buffer size
@@ -86,7 +89,12 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *com1, int *co
 	int woohoo = FALSE;
 	char *Message = (char*)malloc(*TextBufSize * sizeof(char));
 	link p, q;
+	char* inputfilename = (char*)malloc(30 * sizeof(char));
+	char AudioFile[30] = "recording.dat";
+	
+	inputfilename = AudioFile;
 
+	unsigned char* in = (unsigned char*)malloc(593920000 * sizeof(short));
 
 	char* MessageType;
 	char Text = 'T';
@@ -147,7 +155,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *com1, int *co
 			break;
 			/*****************************	QUEUES TEST	*****************************/
 		case 2:
-			QueuesTest(140, txrx, &hComTx, &hComRx, COMPORT_Tx, COMPORT_Rx, nComRate, nComBits, timeout, p);
+			QueuesTest(Message, 140, txrx, &hComTx, &hComRx, COMPORT_Tx, COMPORT_Rx, nComRate, nComBits, timeout);
 			
 			*menuchoice = 0;
 			break;
@@ -180,8 +188,15 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *com1, int *co
 			break;
 			/**********************		COMPRESS MESSAGE		*************************/
 		case 8:
-			SaveAudio(lBigBufSize, iBigBuf);
-			//Huffman_Compress("recording.dat");
+			if (*MessageType == 'A')
+			{
+				SaveAudio(lBigBufSize, iBigBuf);
+				compression(inputfilename, in);
+			}
+			else
+			{
+				printf("\nWe do not like text messages here, peasant.\n\n");
+			}
 			*menuchoice = 0;
 			break;
 			/***********************	ENCRYPT MESSAGE		**************************/
@@ -207,7 +222,6 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *com1, int *co
 			break;
 			/**********************		SHOW QUEUE		******************************/
 		case 12:
-			ShowQueue(q);
 			*menuchoice = 0;
 			break;
 			/***************		ERROR DETECTION AND CORRECTION		*******************/
@@ -229,5 +243,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *com1, int *co
 	} while (!woohoo);
 
 	free(Message);
+	free(inputfilename);
+	free(in);
 }
 

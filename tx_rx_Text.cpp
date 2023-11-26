@@ -59,6 +59,8 @@ extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
 	else if (selection == '2') {
 		bytesRead = receive(&rxHeader, &rxPayload, &hComRx, COMPORT_Rx, nComRate, nComBits, timeout);		// Pass pointer to rxPayload so can access malloc'd memory inside the receive function from main()
 		
+		printf("\n\nRxHeader.payLoadtype is %d\n\n", rxHeader.payLoadType);
+
 		// Use header info to determine if payload needs to be decrypted or decompressed
 		if (rxHeader.encryption != 0) {
 			printf("\nMessage is encrypted so need to decrypt!\n");

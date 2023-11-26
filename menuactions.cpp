@@ -91,60 +91,83 @@ void mainMenu(int *menuchoice, char options[25][40], int* txrx)
 	
 }
 
-void QueuesTest(const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wchar_t* COMPORT1, wchar_t* COMPORT2, int nComRate, int nComBits, COMMTIMEOUTS timeout, link p)
-{
+int QueuesTest(char *Message, const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wchar_t* COMPORT1, wchar_t* COMPORT2, int nComRate, int nComBits, COMMTIMEOUTS timeout)
+{	
+	link p;
 	int randnum;
-	char* buffer;
-	Header Queues; //QueuesTest Header
+	Header Queues; //QueuesTest Header Tx
+	Header QueuesRx; 
+	DWORD bytesRead;
 
+	int NumQuotes; 
+	long int* Indices;
+	int* LengthMessage;
 
-	Queues.sid = 1;
-	Queues.rid = 0;
-	Queues.payloadSize = BUFSIZE;		// Number of bytes in payload after this header
-	Queues.payLoadType = 0;			// 0: Text, 1: Audio, 2: Image etc.
-	Queues.encryption = 0;			// 0: None, 1: XOR,	  2: Vigenere	3: Both
-	Queues.compression = 0;			// 0: None, 1: RLE,	  2: Huffman,	3: Both
+	NumQuotes = fnumQuotes();
+	Indices = (long int*)malloc(NumQuotes * sizeof(long int));
+	LengthMessage = (int*)malloc(NumQuotes * sizeof(int));
 
+	fquoteIndices(NumQuotes, Indices);
+	fquoteLength(NumQuotes, Indices, LengthMessage);
 
-
-
-
-
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		if (*txrx == 1)
 		{
+			//Sleep(1000);
+			randnum = frandNum(0, NumQuotes);
+			printf("%d %d %d %d %d", NumQuotes, Indices[randnum-1], Indices[randnum], randnum, LengthMessage[randnum]);
+			GetMessageFromFile(Message, 140, randnum, NumQuotes, Indices, LengthMessage);
+			printf("Message Sent: %s\n\n", Message);
 			
-			randnum = frandNum(0, fnumQuotes());
-			GetMessageFromFile(buffer, 140, randnum, fnumQuotes(), fquoteIndices(fnumQuotes()), fquoteLength(fnumQuotes(), fquoteIndices(fnumQuotes())));
-			transmit(&Queues, buffer, hComTx, COMPORT1, nComRate, nComBits, timeout);
-			Sleep(4500);
+			Queues.sid = 1;
+			Queues.rid = 0;
+			Queues.payloadSize = BUFSIZE + 1;		// Number of bytes in payload after this header
+			Queues.payLoadType = 0;			// 0: Text, 1: Audio, 2: Image etc.
+			Queues.encryption = 0;			// 0: None, 1: XOR,	  2: Vigenere	3: Both
+			Queues.compression = 0;			// 0: None, 1: RLE,	  2: Huffman,	3: Both
+			
+			
+			printf("Press a key to transmit ...");
+			getchar();
+			transmit(&Queues, Message, hComTx, COMPORT1, nComRate, nComBits, timeout);
+
+			//Sleep(3500);
 		}
 		else
 		{
 			p = (link)malloc(sizeof(Node));
-			receive(&Queues, (void**)p->Data.message, hComRx, COMPORT2, nComRate, nComBits, timeout);
+
+			printf("Press a key to receive...");
+			getchar();
+
+			bytesRead = receive(&QueuesRx, &(p->Data.rxBuff), hComRx, COMPORT2, nComRate, nComBits, timeout);
+			
+			char* mesg = (char*)(p->Data.rxBuff);
+			mesg[bytesRead] = '\0';
+			//printf("\n\nRxHeader.payLoadtype is %d\n\n", Queues.payLoadType);
+			printf("Message received: %s\n\n", p->Data.rxBuff);
 			AddToQueue(p);
 		}
 	}
 
-
-}
-
-
-void ShowQueues(link q)
-{
-	
-	printf("\n	The number of nodes sent  is %d.",count(returnHead()));
-	//More to come lol
-
-	while (!IsQueueEmpty)
+	if (*txrx == 0)
 	{
-		q = DeQueue();
-		printf("MESSAGE:\n\n	%s\n", q->Data.message);
-		free(q);
+		printf("\n	The number of nodes sent  is %d.\n", count(returnHead()));
+		//More to come lol
+
+		while (!IsQueueEmpty())
+		{
+			
+			printf("MESSAGE:\n\n	%s\n\n", DeQueue()->Data.rxBuff);
+		}
 	}
+
+	//free(Indices);
+	//free(LengthMessage);
+	return(0);
 }
+
 
 
 

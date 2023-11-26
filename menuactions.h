@@ -4,7 +4,7 @@ void setup(int* menuchoice, int* TextBufSize, int* RecordTime, int* com1, int* c
 
 void mainMenu(int* menuchoice, char options[25][40], int *txrx);
 
-void QueuesTest(const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wchar_t* COMPORT1, wchar_t* COMPORT2, int nComRate, int nComBits, COMMTIMEOUTS timeout, link p);
+int QueuesTest(char *Message, const int BUFSIZE, int* txrx, HANDLE* hComTx, HANDLE* hComRx, wchar_t* COMPORT1, wchar_t* COMPORT2, int nComRate, int nComBits, COMMTIMEOUTS timeout);
 
 
 void InputText(char *Message, int *TextBufSize);
