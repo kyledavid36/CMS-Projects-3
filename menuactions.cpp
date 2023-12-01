@@ -16,6 +16,10 @@ Author: Amy Wentzell
 #include "RS232Comm.h"
 #include "compression.h"
 #include "Header.h"
+#include "rle.c"
+#include "huffman.h"
+#include "encrypt.h"
+#include "crc.h"
 
 
 // Declare constants, variables and communication parameters
@@ -388,6 +392,143 @@ void AddMessageToQueue(link p, void *message)
 	p->Data.rxBuff = message;
 	AddToQueue(p);
 }
+
+void compressionRatio(int compSize, int fileSize)
+{
+
+	printf("\n	Compression Ratio: %d/%d bytes (%.1f%%)\n", compSize, fileSize, 100 * (float)compSize / (float)fileSize);
+
+
+}
+
+void encryptXOR(void* message)
+{
+	char encBuf[140], decBuf[140], secretKey[140];
+	int messageLen, secretKeyLen;
+	//int encType;
+	int i;
+
+	printf("Please enter message to encrypt: ");
+	scanf_s("%[^\n]s", message, 139);
+	messageLen = sizeof(message);
+
+	printf("Please enter a single word encryption key: ");
+	scanf_s("%s", secretKey, 139);
+	secretKeyLen = strlen(secretKey);
+
+	printf("Message will be encrypted to hexidecimal using XOR encryption: \n");
+
+	printf("\nNow encrypting ...\n");
+
+
+	// Encrypt the message (xor)
+	xorCipher(message, messageLen, secretKey, secretKeyLen, encBuf);
+	printf("XOR Encrypted message in hex:");                               // Will not print as a string so print in HEX, one byte at a time
+	for (i = 0; i < messageLen; i++) {
+		printf(" %02x", encBuf[i]);
+	}
+
+}
+
+void decryptXOR(int messageLen, char* decBuf, char* encBuf)
+{
+	//Decrypt the message (xor)
+
+	int secretKeyLen;
+	char secretKey[140];
+	printf("Please enter a single word encryption key: ");
+	scanf_s("%s", secretKey, 139);
+	secretKeyLen = strlen(secretKey);
+	secretKey[secretKeyLen] = '\0';
+	xorCipher(encBuf, messageLen, secretKey, secretKeyLen, decBuf);
+	printf("\nXOR Decrypted Message: %s\n\n\n\n", decBuf);                       // Can print as a string
+
+}
+
+
+int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize)
+{
+
+	Header rxHeader{};												// Header received
+	void* rxPayload = NULL;											// Received payload (buffer) - void so it can be any data type
+
+
+	//bytesRead = receive(&rxHeader, &rxPayload, hComRx, COMPORT_Rx, nComRate, nComBits, timeout);		// Pass pointer to rxPayload so can access malloc'd memory inside the receive function from main()
+
+	printf("\n\nRxHeader.payLoadtype is %d\n\n", rxHeader.payLoadType);
+
+	// Use header info to determine if payload needs to be decrypted or decompressed
+	if (rxHeader.encryption != 0) {
+		printf("\nDecrypting the message:...\n");
+
+		//Would you like to decrypt the message (Y/N)?
+		decryptXOR(rxHeader.payloadSize, (char*)message, (char*)rxPayload);
+	}
+	else {
+		printf("\nMessage is not encrypted\n");
+	}
+	if (rxHeader.compression == 1) {	//Uncompress Huffman compression
+		printf("\nDecompressing the text from RLE... \n");
+		// rxPayload = decompress(rxPayload)
+
+		RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
+
+	}
+	else if (rxHeader.compression == 2) //Uncompress Huffman compression
+	{
+		printf("\nDecompressing the text from Huffman... \n");
+
+		Huffman_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, rxHeader.payloadSize, *textBufSize * sizeof(char));
+		compressionRatio(*(int*)message, *textBufSize * sizeof(char));
+	}
+	else if (rxHeader.compression == 3) //Uncompress both huffman and RLE compression
+	{
+		printf("\nDecompressing the text from both compression styles... \n");
+
+		RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
+		Huffman_Uncompress((unsigned char*)message, (unsigned char*)rxPayload, rxHeader.payloadSize, *textBufSize * sizeof(char));
+
+	}
+	else {
+		printf("\nMessage is not compressed\n");
+	}
+
+	return(0);
+}
+
+
+
+int CRC(void* message, void* sentMessage)
+{
+	//unsigned char inBuf[] = "0123456789"; //input
+
+	int nBytes = strlen((char*)message); //number of characters
+	crc compCRC;
+	char CRCstring[8];
+
+	//char* sentMessage = (char*)malloc((nBytes + 8) * sizeof(unsigned char)); //buffer	
+
+	int i; //counter
+
+	//Complete CRCs and send message
+	//Change bits to see effect on CRC
+	for (i = 0; i <= nBytes; i++)
+	{
+		compCRC = crcSlow((unsigned char*)message, nBytes);
+		sprintf(CRCstring, " 0x%x", compCRC);
+		strcpy((char*)sentMessage, (char*)message);
+		strcat((char*)sentMessage, CRCstring);
+		printf("Sent message with CRC. %s\n", sentMessage);
+		*(char*)message = '0';
+		//*message[i++];
+	}
+	free(sentMessage);
+	return(0);
+
+}
+
+
+
 
 
 //int messageloop()

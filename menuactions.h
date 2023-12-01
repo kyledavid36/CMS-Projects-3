@@ -12,7 +12,6 @@ int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage);
 
 void InputText(char *Message, int *TextBufSize);
 
-
 void RecordAudio(long lBigBufSize, short* iBigBuf);
 
 void PlaybackAudio(long lBigBufSize, short* iBigBuf);
@@ -27,6 +26,15 @@ void AddMessageToQueue(link p, void* message);
 
 void myFlushAll();
 
+int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize);
+
+void encryptXOR(void* message);
+
+void decryptXOR(int messageLen, char* decBuf, char* encBuf);
+
+void compressionRatio(int compSize, int fileSize);
+
+int CRC(void* message, void* sentMessage);
 
 
 //void getMessageFromUser(char* Message);
