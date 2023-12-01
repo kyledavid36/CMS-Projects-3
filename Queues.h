@@ -15,7 +15,7 @@ typedef Node* link;
 
 
 struct item {
-	char message[MAX_QUOTE_LENGTH];   //messages
+	void* rxBuff;					  // Received buffer
 	int MessLength; //message lengths
 	short int sid = 3;			// Sender ID
 	short int rid;			// Receiver ID
@@ -41,5 +41,5 @@ void traverseR(link h, void (*visit)(link));
 void visit(link h);
 int count(link x);
 link deleteR(link parent, link child, Item v);
-int queuesTest();
+//int queuesTest();
 
