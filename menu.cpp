@@ -12,80 +12,12 @@
 
 // Declare constants, variables and communication parameters
 extern const int BUFSIZE;							// Buffer size
-extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
-extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
-extern HANDLE hComRx;								// Pointer to the selected COM port (Receiver)
-extern HANDLE hComTx;								// Pointer to the selected COM port (Transmitter)
+//extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
+//extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
+extern HANDLE hCom;								// Pointer to the selected COM port (Receiver)
 extern int nComRate;								// Baud (Bit) rate in bits/second 
 extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
-
-
-//void COMPORT(char comT, char comR, wchar_t *COMPORT)
-//{
-//	
-//	switch (comT)
-//	{
-//	case '0':
-//
-//		COMPORT_Tx[3] = L"0";
-//		break;
-//	case '1':
-//		COMPORT_Tx[] = L"COM1";
-//		break;
-//	case '2':
-//		COMPORT_Tx[] = L"COM2";
-//		break;
-//	case '3':
-//		COMPORT_Tx[] = L"COM3";
-//		break;
-//	case '4':
-//		COMPORT_Tx[] = L"COM4";
-//		break;
-//	case '5':
-//		COMPORT_Tx[] = L"COM5";
-//		break;
-//	case '6':
-//		COMPORT_Tx[] = L"COM6";
-//		break;
-//	default:
-//		COMPORT_Tx[] = L"COM6";
-//		break;
-//	}
-//
-//	switch (comR)
-//	{
-//	case '0':
-//
-//		COMPORT_Rx[] = L"COM0";
-//		break;
-//	case '1':
-//		COMPORT_Rx[] = L"COM1";
-//		break;
-//	case '2':
-//		COMPORT_Rx[] = L"COM2";
-//		break;
-//	case '3':
-//		COMPORT_Rx[] = L"COM3";
-//		break;
-//	case '4':
-//		COMPORT_Rx[] = L"COM4";
-//		break;
-//	case '5':
-//		COMPORT_Rx[] = L"COM5";
-//		break;
-//	case '6':
-//		COMPORT_Rx[] = L"COM6";
-//		break;
-//	default:
-//		COMPORT_Rx[] = L"COM3";
-//		break;
-//	}
-//
-//}
-
-
-
 
 
 void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, long lBigBufSize, int *txrx, LPCSTR COMPORT, Header txHeader, Header rxHeader)
@@ -119,7 +51,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 
 	
 
-	char options[20][40] = {
+	char options[16][40] = {
 		"QUEUES TEST (Tx/Rx)",
 		"AUDIO / COMMS TEST (Tx/Rx)",
 		"INPUT TEXT MESSAGE (Tx)",
@@ -135,7 +67,6 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 		"POP FROM THE HEAD (Rx)",
 		"CLEAR QUEUE (Rx)",
 		"ERROR DETECTION / CORRECTION (Rx)",
-		"PHONE BOOK (Tx)",
 		"Exit" };
 
 	do
@@ -163,23 +94,28 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			if (*compointer == 5) { COMPORT = "COM5"; }
 			if (*compointer == 6) { COMPORT = "COM6"; }
 
+			printf("\nYou entered: %d, and the COMPORT is: %s.\n", *compointer, COMPORT);
+
 			break;
 
 			/******************************		MAIN MENU	***************************/
 		case 0: //Choose the setting here
 
+			
 			mainMenu(menuchoice, options, txrx);
 			
 			break;
 			/*****************************	QUEUES TEST	*****************************/
 		case 1:
-			QueuesTest(NumQuotes, Indices, LengthMessage, (char*)message, 140, txrx);
+			QueuesTest(NumQuotes, Indices, LengthMessage, (char*)message, 140, txrx, COMPORT);
 			
 			*menuchoice = 0;
 			break;
 			/*************************		COMMS TEST		****************************/
 		case 2: //Transmit and Receive Test
-			CommsTest(txrx, lBigBufSize, (short*)message);
+			printf("\nYou entered: %d, and the COMPORT is: %s.\n", *compointer, COMPORT);
+			
+			CommsTest(txrx, lBigBufSize, (short*)message, COMPORT);
 			
 			*menuchoice = 0;
 			break;
@@ -209,11 +145,12 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			/**********************		COMPRESS MESSAGE		*************************/
 		case 7:
 			CompressMessage(MessageType, (short*)message, lBigBufSize);
+			PlaybackAudio(lBigBufSize, (short*) message);
 			*menuchoice = 0;
 			break;
 			/***********************	ENCRYPT MESSAGE		**************************/
 		case 8:
-			encryptXOR(message);
+			encryptXOR(message, TextBufSize);
 			*menuchoice = 0;
 			break;
 			/************************	HEADER SETTINGS		**************************/
@@ -224,7 +161,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			/************************	SEND / RECEIVE MESSAGE		**************************/
 		case 10:
 
-			SendReceive(message, headerOnOff, txrx, MessageType);
+			SendReceive(message, headerOnOff, txrx, MessageType, COMPORT);
 			*menuchoice = 0;
 			break;
 			/***************		ADD MESSAGE TO QUEUE		*******************/
@@ -258,12 +195,8 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			
 			*menuchoice = 0;
 			break;
-			/**********************		BST PHONEBOOK		********************/
-		case 16:
-			*menuchoice = 0;
-			break;
 			/*****************************		EXIT	*****************************/
-		case 17:
+		case 16:
 			woohoo = TRUE;
 			break;
 		default:

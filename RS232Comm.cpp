@@ -12,22 +12,22 @@
 #define EX_FATAL 1
 
 
-extern LPCSTR COMPORT;
+
 //extern int com;
 
-void NHtransmit(void* Payload, long int buffersize, HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout)
+void NHtransmit(void* Payload, long int buffersize, HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout, LPCSTR COMPORT)
 {
-	initPort(hCom, nComRate, nComBits, timeout);						// Initialize the Tx port
+	initPort(hCom, nComRate, nComBits, timeout, COMPORT);						// Initialize the Tx port
 	outputToPort(hCom, Payload, buffersize);				// Send payload
 	Sleep(500);															// Allow time for signal propagation on cable 
 	purgePort(hCom);													// Purge the Tx port
 	CloseHandle(*hCom);													// Close the handle to Tx port 
 }
 
-DWORD NHreceive(void** Payload, long int buffersize, HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout)
+DWORD NHreceive(void** Payload, long int buffersize, HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout, LPCSTR COMPORT)
 {
 	DWORD bytesRead;
-	initPort(hCom, nComRate, nComBits, timeout);				// Initialize the Rx port
+	initPort(hCom, nComRate, nComBits, timeout, COMPORT);				// Initialize the Rx port
 	Payload = (void**)malloc(buffersize);				// Allocate buffer memory to receive payload. Will have to recast these bytess later to a specific data type / struct / etc - rembmer top free it in main()
 	bytesRead = inputFromPort(hCom, Payload, buffersize);// Receive payload 
 	purgePort(hCom);													// Purge the Rx port
@@ -37,8 +37,8 @@ DWORD NHreceive(void** Payload, long int buffersize, HANDLE* hCom, int nComRate,
 
 
 // Main functions
-void transmit(Header* txHeader, void* txPayload, HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout) {
-	initPort(hCom, nComRate, nComBits, timeout);				// Initialize the Tx port
+void transmit(Header* txHeader, void* txPayload, HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout, LPCSTR COMPORT) {
+	initPort(hCom, nComRate, nComBits, timeout, COMPORT);				// Initialize the Tx port
 	outputToPort(hCom, txHeader, sizeof(Header));						// Send Header
 	outputToPort(hCom, txPayload, (*txHeader).payloadSize);				// Send payload
 	Sleep(500);															// Allow time for signal propagation on cable 
@@ -46,10 +46,10 @@ void transmit(Header* txHeader, void* txPayload, HANDLE* hCom, int nComRate, int
 	CloseHandle(*hCom);													// Close the handle to Tx port 
 }
 
-DWORD receive(Header* rxHeader, void** rxPayload, HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout) {
+DWORD receive(Header* rxHeader, void** rxPayload, HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout, LPCSTR COMPORT) {
 	// Note: Pointer to rxPayload buffer (pointer to a pointer) is passed to this function since this function malloc's the amount of memory required - need to free it in main()
 	DWORD bytesRead;  
-	initPort(hCom, nComRate, nComBits, timeout);				// Initialize the Rx port
+	initPort(hCom, nComRate, nComBits, timeout, COMPORT);				// Initialize the Rx port
 	inputFromPort(hCom, rxHeader, sizeof(Header));						// Read in Header first (which is a standard number of bytes) to get size of payload 
 	*rxPayload = (void*)malloc((*rxHeader).payloadSize);				// Allocate buffer memory to receive payload. Will have to recast these bytess later to a specific data type / struct / etc - rembmer top free it in main()
 	bytesRead = inputFromPort(hCom, *rxPayload, (*rxHeader).payloadSize);// Receive payload 
@@ -60,8 +60,8 @@ DWORD receive(Header* rxHeader, void** rxPayload, HANDLE* hCom, int nComRate, in
 
 /* *********** Support Functions ******************************************/
 // Initializes the port and sets the communication parameters
-void initPort(HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout) {
-	createPortFile(hCom);						// Initializes hCom to point to PORT#
+void initPort(HANDLE* hCom, int nComRate, int nComBits, COMMTIMEOUTS timeout, LPCSTR COMPORT) {
+	createPortFile(hCom, COMPORT);						// Initializes hCom to point to PORT#
 	purgePort(hCom);									// Purges the COM port
 	SetComParms(hCom, nComRate, nComBits, timeout);		// Uses the DCB structure to set up the COM port
 	purgePort(hCom);
@@ -124,7 +124,7 @@ DWORD inputFromPort(HANDLE* hCom, LPVOID buf, DWORD szBuf) {
 // Sub functions called by above functions
 /**************************************************************************************/
 // Set the hCom HANDLE to point to a COM port, initialize for reading and writing, open the port and set securities
-void createPortFile(HANDLE* hCom) {
+void createPortFile(HANDLE* hCom, LPCSTR COMPORT) {
 	// Call the CreateFile() function 
 	*hCom = CreateFile(
 		(wchar_t*)COMPORT,									// COM port number  --> If COM# is larger than 9 then use the following syntax--> "\\\\.\\COM10"

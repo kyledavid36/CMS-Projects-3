@@ -23,10 +23,10 @@ Author: Amy Wentzell
 
 // Declare constants, variables and communication parameters
 extern const int BUFSIZE;							// Buffer size
-extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
-extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
-extern HANDLE hComRx;								// Pointer to the selected COM port (Receiver)
-extern HANDLE hComTx;								// Pointer to the selected COM port (Transmitter)
+//extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
+//extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
+//extern LPCSTR COMPORT;
+extern HANDLE hCom;								// Pointer to the selected COM port (Receiver)
 extern int nComRate;								// Baud (Bit) rate in bits/second 
 extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
@@ -80,7 +80,7 @@ void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int* compointer, 
 
 
 /****************************		MAIN MENU		*****************************/
-void mainMenu(int *menuchoice, char options[25][40], int* txrx)
+void mainMenu(int *menuchoice, char options[16][40], int* txrx)
 {
 
 	printf("\n\n\n\n\n\nCoded Messaging System\n	By: Amy Wentzell and Kyle Dick\n	Version: 2023\n\n\n");
@@ -88,7 +88,7 @@ void mainMenu(int *menuchoice, char options[25][40], int* txrx)
 	
 	
 
-	for (int i = 1; i < 20; i++)
+	for (int i = 1; i < 17; i++)
 	{
 		printf("	(%d)	", i);
 		for (int j = 0; j < 40; j++)
@@ -179,7 +179,7 @@ void CompressMessage(char *MessageType, void* message, long lBigBufSize)
 	}
 }
 
-int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage)
+int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage, LPCSTR COMPORT)
 {
 
 
@@ -199,16 +199,18 @@ int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage)
 			*(audiomessage++) = fgetc(f);
 		}
 		fclose(f);
+		printf("\nThe COMPORT is: %s.\n", COMPORT);
 		printf("\n\nPress a key to transmit ...");
 		getchar();
-		NHtransmit(audiomessage, lBigBufSize * 2, &hComTx, nComRate, nComBits, timeout);
+		
+		NHtransmit(audiomessage, lBigBufSize * 2, &hCom, nComRate, nComBits, timeout, COMPORT);
 
 	}
 	else
 	{
 		printf("\n\nPress a key to receive ...");
 		getchar();
-		NHreceive((void**)audiomessage, lBigBufSize, &hComRx, nComRate, nComBits, timeout);
+		NHreceive((void**)audiomessage, lBigBufSize, &hCom, nComRate, nComBits, timeout, COMPORT);
 		PlaybackAudio(lBigBufSize, audiomessage);
 	}
 
@@ -260,7 +262,7 @@ int TextSettings(int* TextBufSize)
 	return(*TextBufSize);
 }
 
-int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Message, const int BUFSIZE, int* txrx)
+int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Message, const int BUFSIZE, int* txrx, LPCSTR COMPORT)
 {	
 	link p;
 	int randnum;
@@ -291,7 +293,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			
 			printf("\n\nPress a key to transmit ...");
 			getchar();
-			transmit(&Queues, Message, &hComTx, nComRate, nComBits, timeout);
+			transmit(&Queues, Message, &hCom, nComRate, nComBits, timeout, COMPORT);
 
 			//Sleep(3500);
 		}
@@ -302,7 +304,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			printf("\n\nPress a key to receive...");
 			getchar();
 
-			bytesRead = receive(&QueuesRx, &(p->Data.rxBuff), &hComRx, nComRate, nComBits, timeout);
+			bytesRead = receive(&QueuesRx, &(p->Data.rxBuff), &hCom, nComRate, nComBits, timeout, COMPORT);
 			
 			char* mesg = (char*)(p->Data.rxBuff);
 			mesg[bytesRead] = '\0';
@@ -326,7 +328,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 }
 
 
-void SendReceive(void *message, int headerOnOff, int *txrx, char *MessageType)
+void SendReceive(void *message, int headerOnOff, int *txrx, char *MessageType, LPCSTR COMPORT)
 {
 	
 	switch (*txrx)
@@ -336,13 +338,13 @@ void SendReceive(void *message, int headerOnOff, int *txrx, char *MessageType)
 			{
 				printf("\n\nPress a key to receive...");
 				getchar();
-				receive(&rxHeader, (void**)message, &hComRx, nComRate, nComBits, timeout);
+				receive(&rxHeader, (void**)message, &hCom, nComRate, nComBits, timeout, COMPORT);
 			}
 			else
 			{
 				printf("\n\nPress a key to receive...");
 				getchar();
-				NHreceive((void**)message, sizeof(message), &hComRx, nComRate, nComBits, timeout);
+				NHreceive((void**)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
 			}
 			break;
 		case 1:
@@ -353,13 +355,13 @@ void SendReceive(void *message, int headerOnOff, int *txrx, char *MessageType)
 					{
 						printf("\n\nPress a key to transmit ...");
 						getchar();
-						transmit(&txHeader, (char*)message, &hComTx, nComRate, nComBits, timeout);
+						transmit(&txHeader, (char*)message, &hCom, nComRate, nComBits, timeout, COMPORT);
 					}
 					else
 					{
 						printf("\n\nPress a key to transmit ...");
 						getchar();
-						NHtransmit((char*)message, sizeof(message), &hComTx, nComRate, nComBits, timeout);
+						NHtransmit((char*)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
 					}
 					break;
 				case 'T':
@@ -367,13 +369,13 @@ void SendReceive(void *message, int headerOnOff, int *txrx, char *MessageType)
 					{
 						printf("\n\nPress a key to transmit ...");
 						getchar();
-						transmit(&txHeader, (short*)message, &hComTx, nComRate, nComBits, timeout);
+						transmit(&txHeader, (short*)message, &hCom, nComRate, nComBits, timeout, COMPORT);
 					}
 					else
 					{
 						printf("\n\nPress a key to transmit ...");
 						getchar();
-						NHtransmit((short*)message, sizeof(message), &hComTx, nComRate, nComBits, timeout);
+						NHtransmit((short*)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
 					}
 					break;
 				default:
@@ -400,16 +402,13 @@ void compressionRatio(int compSize, int fileSize)
 
 }
 
-void encryptXOR(void* message)
+void encryptXOR(void* message, int *TextBufSize)
 {
 	char encBuf[140], decBuf[140], secretKey[140];
-	int messageLen, secretKeyLen;
+	int messageLen = *TextBufSize;
+	int secretKeyLen;
 	//int encType;
 	int i;
-
-	printf("Please enter message to encrypt: ");
-	scanf_s("%[^\n]s", message, 139);
-	messageLen = sizeof(message);
 
 	printf("Please enter a single word encryption key: ");
 	scanf_s("%s", secretKey, 139);
