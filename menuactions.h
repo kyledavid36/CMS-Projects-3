@@ -20,13 +20,13 @@ int SaveAudio(long lBigBufSize, short* iBigBuf);
 
 void CompressMessage(char* MessageType, void* message, long lBigBufSize);
 
-void SendReceive(void* message, int headerOnOff, int* txrx, char* MessageType, LPCSTR COMPORT);
-
 void AddMessageToQueue(link p, void* message);
 
 void myFlushAll();
 
-int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize);
+int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int onoff);
+
+void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOnOff, int* txrx, char* MessageType, LPCSTR COMPORT);
 
 void encryptXOR(void* message, int* TextBufSize);
 

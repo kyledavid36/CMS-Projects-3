@@ -64,8 +64,7 @@ LPCSTR COMPORT;
 // --> If COM# is larger than 9 then use the following syntax--> "\\\\.\\COM10"
 
 // Communication variables and parameters
-HANDLE hComRx;										// Pointer to the selected COM port (Receiver)
-HANDLE hComTx;										// Pointer to the selected COM port (Transmitter)
+HANDLE hCom;										// Pointer to the selected COM port (Receiver)
 int nComRate = 230400;//9600*16;								// Baud (Bit) rate in bits/second 
 int nComBits = 8;									// Number of bits per frame
 COMMTIMEOUTS timeout;								// A commtimeout struct variable

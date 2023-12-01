@@ -160,8 +160,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			break;
 			/************************	SEND / RECEIVE MESSAGE		**************************/
 		case 10:
-
-			SendReceive(message, headerOnOff, txrx, MessageType, COMPORT);
+			SendReceive( message, TextBufSize, lBigBufSize, headerOnOff, txrx, MessageType, COMPORT);
 			*menuchoice = 0;
 			break;
 			/***************		ADD MESSAGE TO QUEUE		*******************/

@@ -179,6 +179,8 @@ void CompressMessage(char *MessageType, void* message, long lBigBufSize)
 	}
 }
 
+
+
 int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage, LPCSTR COMPORT)
 {
 
@@ -327,73 +329,6 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 	return(0);
 }
 
-
-void SendReceive(void *message, int headerOnOff, int *txrx, char *MessageType, LPCSTR COMPORT)
-{
-	
-	switch (*txrx)
-		{
-		case 0:
-			if (headerOnOff == 1)
-			{
-				printf("\n\nPress a key to receive...");
-				getchar();
-				receive(&rxHeader, (void**)message, &hCom, nComRate, nComBits, timeout, COMPORT);
-			}
-			else
-			{
-				printf("\n\nPress a key to receive...");
-				getchar();
-				NHreceive((void**)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
-			}
-			break;
-		case 1:
-			switch (*MessageType)
-				{
-				case 'A':
-					if (headerOnOff == 1)
-					{
-						printf("\n\nPress a key to transmit ...");
-						getchar();
-						transmit(&txHeader, (char*)message, &hCom, nComRate, nComBits, timeout, COMPORT);
-					}
-					else
-					{
-						printf("\n\nPress a key to transmit ...");
-						getchar();
-						NHtransmit((char*)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
-					}
-					break;
-				case 'T':
-					if (headerOnOff == 1)
-					{
-						printf("\n\nPress a key to transmit ...");
-						getchar();
-						transmit(&txHeader, (short*)message, &hCom, nComRate, nComBits, timeout, COMPORT);
-					}
-					else
-					{
-						printf("\n\nPress a key to transmit ...");
-						getchar();
-						NHtransmit((short*)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
-					}
-					break;
-				default:
-					break;
-				}
-			break;
-		default:
-			break;
-		}
-	
-}
-
-void AddMessageToQueue(link p, void *message)
-{
-	p->Data.rxBuff = message;
-	AddToQueue(p);
-}
-
 void compressionRatio(int compSize, int fileSize)
 {
 
@@ -402,7 +337,7 @@ void compressionRatio(int compSize, int fileSize)
 
 }
 
-void encryptXOR(void* message, int *TextBufSize)
+void encryptXOR(void* message, int* TextBufSize)
 {
 	char encBuf[140], decBuf[140], secretKey[140];
 	int messageLen = *TextBufSize;
@@ -443,8 +378,7 @@ void decryptXOR(int messageLen, char* decBuf, char* encBuf)
 
 }
 
-
-int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize)
+int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int onoff)
 {
 
 	Header rxHeader{};												// Header received
@@ -456,43 +390,124 @@ int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize)
 	printf("\n\nRxHeader.payLoadtype is %d\n\n", rxHeader.payLoadType);
 
 	// Use header info to determine if payload needs to be decrypted or decompressed
-	if (rxHeader.encryption != 0) {
-		printf("\nDecrypting the message:...\n");
 
-		//Would you like to decrypt the message (Y/N)?
-		decryptXOR(rxHeader.payloadSize, (char*)message, (char*)rxPayload);
-	}
-	else {
-		printf("\nMessage is not encrypted\n");
-	}
-	if (rxHeader.compression == 1) {	//Uncompress Huffman compression
-		printf("\nDecompressing the text from RLE... \n");
-		// rxPayload = decompress(rxPayload)
-
-		RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
-
-	}
-	else if (rxHeader.compression == 2) //Uncompress Huffman compression
+	if (onoff == 0)
 	{
-		printf("\nDecompressing the text from Huffman... \n");
-
-		Huffman_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, rxHeader.payloadSize, *textBufSize * sizeof(char));
-		compressionRatio(*(int*)message, *textBufSize * sizeof(char));
+		printf("\n\nMessage: %s\n\n", (char*)message);
+		printf("\nPlaying back message...\n\n");
+		PlaybackAudio(lBigBufSize, (short*)message);
 	}
-	else if (rxHeader.compression == 3) //Uncompress both huffman and RLE compression
+	else
 	{
-		printf("\nDecompressing the text from both compression styles... \n");
+		if (rxHeader.encryption != 0) {
+			printf("\nDecrypting the message:...\n");
 
-		RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
-		Huffman_Uncompress((unsigned char*)message, (unsigned char*)rxPayload, rxHeader.payloadSize, *textBufSize * sizeof(char));
+			//Would you like to decrypt the message (Y/N)?
+			decryptXOR(rxHeader.payloadSize, (char*)message, (char*)rxPayload);
+		}
+		else {
+			printf("\nMessage is not encrypted\n");
+		}
+		if (rxHeader.compression == 1) {	//Uncompress Huffman compression
+			printf("\nDecompressing the text from RLE... \n");
+			// rxPayload = decompress(rxPayload)
 
+			RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
+
+		}
+		else if (rxHeader.compression == 2) //Uncompress Huffman compression
+		{
+			printf("\nDecompressing the text from Huffman... \n");
+
+			Huffman_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, rxHeader.payloadSize, *textBufSize * sizeof(char));
+			compressionRatio(*(int*)message, *textBufSize * sizeof(char));
+		}
+		else if (rxHeader.compression == 3) //Uncompress both huffman and RLE compression
+		{
+			printf("\nDecompressing the text from both compression styles... \n");
+
+			RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
+			Huffman_Uncompress((unsigned char*)message, (unsigned char*)rxPayload, rxHeader.payloadSize, *textBufSize * sizeof(char));
+
+		}
+		else {
+			printf("\nMessage is not compressed\n");
+		}
 	}
-	else {
-		printf("\nMessage is not compressed\n");
-	}
-
 	return(0);
 }
+
+void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOnOff, int* txrx, char* MessageType, LPCSTR COMPORT)
+{
+
+	switch (*txrx)
+	{
+	case 0:
+		if (headerOnOff == 1)
+		{
+			printf("\n\nPress a key to receive...");
+			getchar();
+			receive(&rxHeader, (void**)message, &hCom, nComRate, nComBits, timeout, COMPORT);
+			DD(message, MessageType, TextBufSize, lBigBufSize, headerOnOff);
+		}
+		else
+		{
+			printf("\n\nPress a key to receive...");
+			getchar();
+			NHreceive((void**)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
+			DD(message, MessageType, TextBufSize, lBigBufSize, headerOnOff);
+		}
+		break;
+	case 1:
+		switch (*MessageType)
+		{
+		case 'A':
+			if (headerOnOff == 1)
+			{
+				printf("\n\nPress a key to transmit ...");
+				getchar();
+				transmit(&txHeader, (char*)message, &hCom, nComRate, nComBits, timeout, COMPORT);
+			}
+			else
+			{
+				printf("\n\nPress a key to transmit ...");
+				getchar();
+				NHtransmit((char*)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
+			}
+			break;
+		case 'T':
+			if (headerOnOff == 1)
+			{
+				printf("\n\nPress a key to transmit ...");
+				getchar();
+				transmit(&txHeader, (short*)message, &hCom, nComRate, nComBits, timeout, COMPORT);
+			}
+			else
+			{
+				printf("\n\nPress a key to transmit ...");
+				getchar();
+				NHtransmit((short*)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+
+}
+
+void AddMessageToQueue(link p, void *message)
+{
+	p->Data.rxBuff = message;
+	AddToQueue(p);
+}
+
+
+
+
 
 
 
