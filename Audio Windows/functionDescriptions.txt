@@ -1,0 +1,14 @@
+waveOutOpen function: opens a supplied audio signal to be played
+
+MMRESULT waveOutOpen(
+  LPHWAVEOUT     phwo,      
+  UINT_PTR       uDeviceID, 
+  LPWAVEFORMATEX pwfx,      
+  DWORD_PTR      dwCallback,
+  DWORD_PTR      dwCallbackInstance,
+  DWORD          fdwOpen    
+);
+
+If successfull, the function returns MMSYSERR_NOERROR,
+otherwise it returns one of 3 error values.
+

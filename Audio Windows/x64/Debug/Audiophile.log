@@ -1,2 +1,5 @@
 ﻿  main.cpp
+  QueuesR.cpp
+  Generating Code...
+C:\Users\kyled\Local Files\Desktop\GitHub Local\CMS-Projects-3\Audio Windows\QueuesR.cpp(65): warning C4715: 'deleteR': not all control paths return a value
   Audiophile.vcxproj -> C:\Users\kyled\Local Files\Desktop\GitHub Local\CMS-Projects-3\Audio Windows\x64\Debug\Audiophile.exe

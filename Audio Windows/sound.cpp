@@ -23,7 +23,7 @@ static	HWAVEOUT	HWaveOut;				/* Handle of opened WAVE Out and In device -- Think
 static  HWAVEIN		HWaveIn;
 static	WAVEFORMATEX WaveFormat;			/* WAVEFORMATEX structure for reading in the WAVE fmt chunk */
 static  WAVEHDR	WaveHeader[NFREQUENCIES];	/* WAVEHDR structures - 1 per buffer */
-static  WAVEHDR	WaveHeaderSilence;
+static  WAVEHDR	WaveHeaderSilence;			/* Defines the header used to identify the waveform-audio buffer*/
 static  WAVEHDR WaveHeaderIn;
 
 /* PLAYBACK FUNCTIONS */
@@ -56,7 +56,7 @@ int PlayBuffer(short *piBuf, long lSamples)
 	// get the header ready for playback
 	WaveHeader.lpData = (char *)piBuf;
 	WaveHeader.dwBufferLength = lSamples * sizeof(short);
-	rc = waveOutPrepareHeader(HWaveOut, &WaveHeader, sizeof(WAVEHDR));
+	rc = waveOutPrepareHeader(HWaveOut, &WaveHeader, sizeof(WAVEHDR)); /* waveOutPrepareHeader a block of data for audio playback */
 	if (rc) {
 		printf("Failed preparing WAVEHDR, error 0x%x.", rc);
 		return(0);
@@ -76,7 +76,8 @@ void ClosePlayback(void)
 {
 	int		i;
 	for (i = 0; i < NFREQUENCIES; ++i) {
-		waveOutUnprepareHeader(HWaveOut, &WaveHeader[i], sizeof(WAVEHDR));
+		// This function cleans up the work done by waveOutprepareHeader and must be called before freeing the buffer
+		waveOutUnprepareHeader(HWaveOut, &WaveHeader[i], sizeof(WAVEHDR)); 
 	}
 	// close the playback device
 	waveOutClose(HWaveOut);
