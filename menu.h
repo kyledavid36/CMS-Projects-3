@@ -1,4 +1,4 @@
 #pragma once
 #include "Header.h"
 
-void menu(int* menuchoice, int* TextBufSize, int* RecordTime, int* compointer, long lBigBufSize, int* txrx, LPCSTR COMPORT, Header txHeader, Header rxHeader);
+void menu(void* message, long int* Indices, int* LengthMessage, int* menuchoice, int* RecordTime, long lBigBufSize, Header txHeader, Header rxHeader);

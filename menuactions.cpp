@@ -23,9 +23,8 @@ Author: Amy Wentzell
 
 // Declare constants, variables and communication parameters
 extern const int BUFSIZE;							// Buffer size
-//extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
-//extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
-//extern LPCSTR COMPORT;
+extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
+extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
 extern HANDLE hCom;								// Pointer to the selected COM port (Receiver)
 extern int nComRate;								// Baud (Bit) rate in bits/second 
 extern int nComBits;								// Number of bits per frame
@@ -45,7 +44,7 @@ void myFlushAll()
 }
 
 /****************************		SETUP		*****************************/
-void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int* compointer, int *txrx)
+void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int *txrx)
 {
 
 	printf("Calibrating...\n");
@@ -54,16 +53,12 @@ void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int* compointer, 
 	scanf_s("%d", txrx);
 	myFlushAll();
 
-	printf("\n\n	Please input the COM port: \n\n	COM0 = 0\n	COM1 = 1\n	COM2 = 2\n	COM3 = 3\n	COM4 = 4\n	COM5 = 5\n	COM6 = 6\n\nChoice:	");
-	scanf_s("%d", compointer);
-	myFlushAll();
-
 	printf("\n\n	Please input the text buffer size (Max = 140, Min = 1): ");
 	scanf_s("%d", TextBufSize);
-
+	myFlushAll();
 	printf("\n\n	Please input the record time (Max = 10, Min = 1): ");
 	scanf_s("%d", RecordTime);
-
+	myFlushAll();
 
 	if (0 < *TextBufSize && *TextBufSize <= 140 && 0 < *RecordTime && *RecordTime <= 15 && *txrx >=0 && *txrx <= 1 )
 	{
@@ -75,7 +70,7 @@ void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int* compointer, 
 		printf("\nERROR: invalid input.");
 		
 	}
-
+	*menuchoice = 0;
 }
 
 
@@ -181,10 +176,10 @@ void CompressMessage(char *MessageType, void* message, long lBigBufSize)
 
 
 
-int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage, LPCSTR COMPORT)
+int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage)
 {
 
-
+	
 	if (*txrx == 1)
 	{
 		FILE* f;
@@ -201,18 +196,17 @@ int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage, LPCSTR C
 			*(audiomessage++) = fgetc(f);
 		}
 		fclose(f);
-		printf("\nThe COMPORT is: %s.\n", COMPORT);
 		printf("\n\nPress a key to transmit ...");
 		getchar();
 		
-		NHtransmit(audiomessage, lBigBufSize * 2, &hCom, nComRate, nComBits, timeout, COMPORT);
+		NHtransmit(audiomessage, lBigBufSize * 2);
 
 	}
 	else
 	{
 		printf("\n\nPress a key to receive ...");
 		getchar();
-		NHreceive((void**)audiomessage, lBigBufSize, &hCom, nComRate, nComBits, timeout, COMPORT);
+		NHreceive((void**)audiomessage, lBigBufSize);
 		PlaybackAudio(lBigBufSize, audiomessage);
 	}
 
@@ -264,7 +258,7 @@ int TextSettings(int* TextBufSize)
 	return(*TextBufSize);
 }
 
-int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Message, const int BUFSIZE, int* txrx, LPCSTR COMPORT)
+int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Message, const int BUFSIZE, int* txrx)
 {	
 	link p;
 	int randnum;
@@ -295,7 +289,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			
 			printf("\n\nPress a key to transmit ...");
 			getchar();
-			transmit(&Queues, Message, &hCom, nComRate, nComBits, timeout, COMPORT);
+			transmit(&Queues, Message);
 
 			//Sleep(3500);
 		}
@@ -306,7 +300,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			printf("\n\nPress a key to receive...");
 			getchar();
 
-			bytesRead = receive(&QueuesRx, &(p->Data.rxBuff), &hCom, nComRate, nComBits, timeout, COMPORT);
+			bytesRead = receive(&QueuesRx, &(p->Data.rxBuff));
 			
 			char* mesg = (char*)(p->Data.rxBuff);
 			mesg[bytesRead] = '\0';
@@ -394,7 +388,6 @@ int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int
 	if (onoff == 0)
 	{
 		printf("\n\nMessage: %s\n\n", (char*)message);
-		printf("\nPlaying back message...\n\n");
 		PlaybackAudio(lBigBufSize, (short*)message);
 	}
 	else
@@ -437,7 +430,7 @@ int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int
 	return(0);
 }
 
-void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOnOff, int* txrx, char* MessageType, LPCSTR COMPORT)
+void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOnOff, int* txrx, char* MessageType)
 {
 
 	switch (*txrx)
@@ -447,14 +440,14 @@ void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOn
 		{
 			printf("\n\nPress a key to receive...");
 			getchar();
-			receive(&rxHeader, (void**)message, &hCom, nComRate, nComBits, timeout, COMPORT);
+			receive(&rxHeader, (void**)message);
 			DD(message, MessageType, TextBufSize, lBigBufSize, headerOnOff);
 		}
 		else
 		{
 			printf("\n\nPress a key to receive...");
 			getchar();
-			NHreceive((void**)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
+			NHreceive((void**)message, sizeof(message));
 			DD(message, MessageType, TextBufSize, lBigBufSize, headerOnOff);
 		}
 		break;
@@ -466,13 +459,13 @@ void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOn
 			{
 				printf("\n\nPress a key to transmit ...");
 				getchar();
-				transmit(&txHeader, (char*)message, &hCom, nComRate, nComBits, timeout, COMPORT);
+				transmit(&txHeader, (char*)message);
 			}
 			else
 			{
 				printf("\n\nPress a key to transmit ...");
 				getchar();
-				NHtransmit((char*)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
+				NHtransmit((char*)message, sizeof(message));
 			}
 			break;
 		case 'T':
@@ -480,13 +473,13 @@ void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOn
 			{
 				printf("\n\nPress a key to transmit ...");
 				getchar();
-				transmit(&txHeader, (short*)message, &hCom, nComRate, nComBits, timeout, COMPORT);
+				transmit(&txHeader, (short*)message);
 			}
 			else
 			{
 				printf("\n\nPress a key to transmit ...");
 				getchar();
-				NHtransmit((short*)message, sizeof(message), &hCom, nComRate, nComBits, timeout, COMPORT);
+				NHtransmit((short*)message, sizeof(message));
 			}
 			break;
 		default:
@@ -501,222 +494,7 @@ void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOn
 
 void AddMessageToQueue(link p, void *message)
 {
+	InitQueue();
 	p->Data.rxBuff = message;
 	AddToQueue(p);
 }
-
-
-
-
-
-
-
-//int CRC(void* message, void* sentMessage)
-//{
-//	//unsigned char inBuf[] = "0123456789"; //input
-//
-//	int nBytes = strlen((char*)message); //number of characters
-//	crc compCRC;
-//	char CRCstring[8];
-//
-//	//char* sentMessage = (char*)malloc((nBytes + 8) * sizeof(unsigned char)); //buffer	
-//
-//	int i; //counter
-//
-//	//Complete CRCs and send message
-//	//Change bits to see effect on CRC
-//	for (i = 0; i <= nBytes; i++)
-//	{
-//		compCRC = crcSlow((unsigned char*)message, nBytes);
-//		sprintf(CRCstring, " 0x%x", compCRC);
-//		strcpy((char*)sentMessage, (char*)message);
-//		strcat((char*)sentMessage, CRCstring);
-//		printf("Sent message with CRC. %s\n", sentMessage);
-//		*(char*)message = '0';
-//		//*message[i++];
-//	}
-//	free(sentMessage);
-//	return(0);
-//
-//}
-
-
-
-
-
-//int messageloop()
-//{
-//	char messType = {NULL};
-//	int pass = FALSE;
-//	char c;
-//	
-//	do
-//	{
-//		printf("\nWhat type of message would you like to send? (Audio = A, Text = T):\n");
-//		scanf_s(" %c", &messType, 1);
-//		while ((c = getchar()) != '\n' && c != EOF) {}
-//		if (messType == 'A' || messType == 'T')
-//		{
-//			pass = TRUE;
-//		}
-//		else
-//		{
-//			printf("\nERROR: invalid input. Please retry.\n");
-//		}
-//	}while (!pass);
-//
-//	return(messType);
-//}
-
-
-
-
-
-
-
-//void NoQueues(long lBigBufSize, short *iBigBuf, char *Message)
-//{
-//	int messagetype;
-//
-//
-//	messagetype = messageloop();
-//	if (messagetype == 'A')
-//	{
-//		getAudioFromUser(lBigBufSize, iBigBuf);
-//	}
-//	else if (messagetype == 'T')
-//	{
-//		getMessageFromUser(Message);
-//	}
-//	
-//}
-
-
-
-
-//void testAll()
-//{
-//	audioTest();
-//	queuesTest();
-//}
-
-
-//int menu(int TextBufSize, long lBigBufSize, short *iBigBuf, char *Message)
-//{
-//	int pass = FALSE;
-//	int amount = FALSE;
-//	char x = NULL; //Tx or Rx
-//
-//	char c;
-//	char setting = '0'; //where you are in the menu
-//	char loc;
-//	
-//
-//	char options[6][25] = { "Test Functionality","Audio Settings", "Text Settings", "Tx/Rx with Queues","Tx/Rx without Queues", "Exit" };
-//
-//	printf("Coded Messaging System\n	By: Amy Wentzell and Kyle Dick\n	Version: 2023\n\n\n");
-//
-//	do
-//	{
-//
-//		switch (setting)
-//		{
-//
-//		case '0':
-//			printf("\nWelcome! Choose your setting: \n\n");
-//			for (int i = 1; i < 7; i++)
-//			{
-//				printf("(%d)	", i);
-//				for (int j = 0; j < 25; j++)
-//				{
-//					printf("%c", options[i - 1][j]);
-//				}
-//				printf("\n");
-//			}
-//			printf("Choice:\n");
-//			scanf_s("%c", &loc, 1);
-//			while ((c = getchar()) != '\n' && c != EOF) {}
-//			setting = loc;
-//			break;
-//		case '1':
-//			// TEST
-//			testAll();
-//			setting = '0';
-//			break;
-//		case '2':
-//			//AudioSettings
-//			setting = '0';
-//			break;
-//		case '3':
-//			//Text Settings
-//
-//			TextBufSize = TextSettings(TextBufSize);
-//			setting = '0';
-//			printf("\n			Setting is %c, TextBufSize is %d.\n", setting, TextBufSize);
-//			break;
-//		case '4':
-//			printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n");
-//			scanf_s("%c", &x, 1);
-//			while ((c = getchar()) != '\n' && c != EOF) {}
-//			if (x == '1')
-//			{
-//				printf("How many messages would you like to send?(1 - 10):\n");
-//				scanf_s("%d", &amount);
-//				if (2 <= amount && amount <= 10)
-//				{
-//					
-//					pass = TRUE;
-//				}
-//				else if (amount == 1)
-//				{
-//					NoQueues(lBigBufSize, iBigBuf, Message);
-//					pass = TRUE;
-//				}
-//				else
-//				{
-//					printf("\nERROR: invalid input. Please retry.\n");
-//				}
-//			}
-//			else if (x == '0')
-//			{
-//				
-//				pass = TRUE;
-//			}
-//			else
-//			{
-//				printf("\nERROR: invalid input. Please retry.\n");
-//			}
-//			break;
-//		case '5':
-//			//Send one audio or text message
-//			printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n");
-//			scanf_s("%c", &x, 1);
-//			while ((c = getchar()) != '\n' && c != EOF) {}
-//			if (x == '1')
-//			{
-//				NoQueues(lBigBufSize, iBigBuf, Message);
-//				//printf("%s sending message...\n", Message);
-//				amount = 1;
-//				pass = TRUE;
-//			}
-//			else if (x == '0')
-//			{
-//				amount = 0;
-//				pass = TRUE;
-//			}
-//			else
-//			{
-//				printf("\nERROR: invalid input. Please retry.\n");
-//			}
-//			break;
-//		case '6':
-//			exit(0);
-//			break;
-//		default:
-//			break;
-//		}
-//
-//	} while (!pass);
-//
-//	return(amount);
-//}

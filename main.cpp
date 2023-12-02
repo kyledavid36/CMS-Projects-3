@@ -17,6 +17,7 @@ Authors: Amy Wentzell and Kyle Dick
 #include "menuactions.h"
 #include "sound.h"
 #include "Header.h"
+#include "message.h"
 
 
 //
@@ -33,7 +34,7 @@ const int BUFSIZE = 140;							// Buffer size
 //
 ////Audio
 int NSamples =  DEFAULT_NSAMPLES; 
-int AudBufSize = MIN_BUFSIZE;
+int AudBufSize = 15 * SAMPLES_SEC;
 int SamplesSec = SAMPLES_SEC;
 
 //Text
@@ -41,8 +42,7 @@ int *TextBufSize;
 
 //Audio
 int *RecordTime;
-short AudioBuf[SAMPLES_SEC * RECORD_TIME];
-long  AudioBufSize = SAMPLES_SEC * RECORD_TIME;	// total number of samples
+short iBigBuf;
 
 
 int *menuchoice;
@@ -54,9 +54,8 @@ int* txrx;
 //wchar_t COMPORT_Tx[] = L"COM8";					// COM port used for Tx (use L"COM8" for transmit program)
 
 ////Physical ports
-//wchar_t COMPORT_Rx[5];						// Check device manager after plugging device in and change this port
-//wchar_t COMPORT_Tx[5];						// Check device manager after plugging device in and change this port
-LPCSTR COMPORT;
+wchar_t COMPORT_Rx[5] = L"COM5";						// Check device manager after plugging device in and change this port
+wchar_t COMPORT_Tx[5] = L"COM3";						// Check device manager after plugging device in and change this port
 ////wcsncpy(COMPORT_Tx, L"COM", 3);
 //COMPORT_Tx[0] = L'C';
 
@@ -73,7 +72,11 @@ COMMTIMEOUTS timeout;								// A commtimeout struct variable
 Header txHeader;						// Header transmitted 
 Header rxHeader;						// Header received
 
-int com = 0; //Receiving com port
+
+int NumQuotes = fnumQuotes();
+
+/************		AUDIO FILE		 ************/
+char inputfilename[30] = "recording.dat";
 
 
 
@@ -97,9 +100,23 @@ int main()
 	menuchoice = &menuChoice;
 	txrx = &transmit;
 
-	menu(menuchoice, TextBufSize, RecordTime, &com, AudioBufSize, txrx, COMPORT, rxHeader, txHeader);
+	/*******************	BUFFERS ****************************/
+	void* message = (void*)malloc(AudBufSize * sizeof(short));
 
+	/***********	MESSAGE.CPP REQUIRED MALLOC	***************/
 	
+	long int* Indices = (long int*)malloc(NumQuotes * sizeof(long int));
+	int* LengthMessage = (int*)malloc(NumQuotes * sizeof(int));
+
+
+
+	setup(menuchoice, TextBufSize, RecordTime, txrx);
+
+	menu(message, Indices, LengthMessage, menuchoice, RecordTime, AudBufSize, rxHeader, txHeader);
+
+	free(message);
+	free(Indices);
+	free(LengthMessage);
 
 
 

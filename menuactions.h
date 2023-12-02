@@ -2,13 +2,13 @@
 #include "Queues.h"
 
 
-void setup(int* menuchoice, int* TextBufSize, int* RecordTime, int* compointer, int *txrx);  //comms, text buffer size, and recording time
+void setup(int* menuchoice, int* TextBufSize, int* RecordTime, int* txrx);  //comms, text buffer size, and recording time
 
 void mainMenu(int* menuchoice, char options[16][40], int *txrx);
 
-int QueuesTest(int NumQuotes, long int* Indices, int* LengthMessage, char* Message, const int BUFSIZE, int* txrx, LPCSTR COMPORT);
+int QueuesTest(int NumQuotes, long int* Indices, int* LengthMessage, char* Message, const int BUFSIZE, int* txrx);
 
-int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage, LPCSTR COMPORT);
+int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage);
 
 void InputText(char *Message, int *TextBufSize);
 
@@ -26,7 +26,7 @@ void myFlushAll();
 
 int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int onoff);
 
-void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOnOff, int* txrx, char* MessageType, LPCSTR COMPORT);
+void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOnOff, int* txrx, char* MessageType);
 
 void encryptXOR(void* message, int* TextBufSize);
 

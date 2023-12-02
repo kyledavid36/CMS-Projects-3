@@ -12,29 +12,29 @@
 
 // Declare constants, variables and communication parameters
 extern const int BUFSIZE;							// Buffer size
-//extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
-//extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
+extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
+extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
 extern HANDLE hCom;								// Pointer to the selected COM port (Receiver)
 extern int nComRate;								// Baud (Bit) rate in bits/second 
 extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
+extern int* txrx;
 
+/**************		message.h		****************/
+extern int NumQuotes;
+extern int* TextBufSize;
+/************		AUDIO FILE		 ************/
+extern char inputfilename[30];
 
-void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, long lBigBufSize, int *txrx, LPCSTR COMPORT, Header txHeader, Header rxHeader)
+void menu(void* message, long int* Indices, int* LengthMessage, int *menuchoice, int *RecordTime, long lBigBufSize, Header txHeader, Header rxHeader)
 {
 	
 	int woohoo = FALSE;	//do while loop of menu
 
-	/*******************	BUFFERS ****************************/
-	void* message = (void*)malloc(lBigBufSize * sizeof(short));
+	
 
 	/**************		QUEUES	LINKS			***********/
 	link p;
-
-	/************		AUDIO FILE		 ************/
-	char* inputfilename = (char*)malloc(30 * sizeof(char));
-	char AudioFile[30] = "recording.dat";
-	inputfilename = AudioFile;
 
 	/************		Message Type	*********************/
 	char* MessageType;
@@ -44,10 +44,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 	/***********	HEADER ON/OFF VARIABLE***********/
 	int headerOnOff = 0;
 
-	/***********	MESSAGE.CPP REQUIRED MALLOC	***************/
-	int NumQuotes = fnumQuotes();
-	long int* Indices = (long int*)malloc(NumQuotes * sizeof(long int));
-	int * LengthMessage = (int*)malloc(NumQuotes * sizeof(int));
+	
 
 	
 
@@ -73,31 +70,6 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 	{
 		switch (*menuchoice)
 		{
-			/*******************************	SETUP	*******************************/
-		case 'S':
-
-			
-			setup(menuchoice, TextBufSize, RecordTime, compointer, txrx);
-			
-			printf("\n			SETUP SUMMARY:\n");
-			
-			printf("				COM Port: COM%d\n", *compointer);
-			printf("				Text Buffer Size: %d\n", *TextBufSize);
-			printf("				Record Time: %d seconds\n\n", *RecordTime);
-			myFlushAll();
-
-			if (*compointer == 0) { COMPORT = "COM0"; }
-			if (*compointer == 1) { COMPORT = "COM1"; }
-			if (*compointer == 2) { COMPORT = "COM2"; }
-			if (*compointer == 3) { COMPORT = "COM3"; }
-			if (*compointer == 4) { COMPORT = "COM4"; }
-			if (*compointer == 5) { COMPORT = "COM5"; }
-			if (*compointer == 6) { COMPORT = "COM6"; }
-
-			printf("\nYou entered: %d, and the COMPORT is: %s.\n", *compointer, COMPORT);
-
-			break;
-
 			/******************************		MAIN MENU	***************************/
 		case 0: //Choose the setting here
 
@@ -107,15 +79,14 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			break;
 			/*****************************	QUEUES TEST	*****************************/
 		case 1:
-			QueuesTest(NumQuotes, Indices, LengthMessage, (char*)message, 140, txrx, COMPORT);
+			QueuesTest(NumQuotes, Indices, LengthMessage, (char*)message, 140, txrx);
 			
 			*menuchoice = 0;
 			break;
 			/*************************		COMMS TEST		****************************/
 		case 2: //Transmit and Receive Test
-			printf("\nYou entered: %d, and the COMPORT is: %s.\n", *compointer, COMPORT);
 			
-			CommsTest(txrx, lBigBufSize, (short*)message, COMPORT);
+			CommsTest(txrx, lBigBufSize, (short*)message);
 			
 			*menuchoice = 0;
 			break;
@@ -160,7 +131,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			break;
 			/************************	SEND / RECEIVE MESSAGE		**************************/
 		case 10:
-			SendReceive( message, TextBufSize, lBigBufSize, headerOnOff, txrx, MessageType, COMPORT);
+			SendReceive( message, TextBufSize, lBigBufSize, headerOnOff, txrx, MessageType);
 			*menuchoice = 0;
 			break;
 			/***************		ADD MESSAGE TO QUEUE		*******************/
@@ -203,11 +174,5 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			break;
 		}
 	} while (!woohoo);
-
-	
-	free(message);
-	free(inputfilename);
-	/*free(Indices);
-	free(LengthMessage);*/
 }
 
