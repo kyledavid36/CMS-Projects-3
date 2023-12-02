@@ -31,7 +31,9 @@ extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
 extern Header txHeader;
 extern Header rxHeader;
-
+extern long lBigBufSize;
+extern int* TextBufSize;
+extern int* txrx;
 
 void myFlushAll()
 {
@@ -44,7 +46,7 @@ void myFlushAll()
 }
 
 /****************************		SETUP		*****************************/
-void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int *txrx)
+void setup(int *menuchoice, int *RecordTime)
 {
 
 	printf("Calibrating...\n");
@@ -75,7 +77,7 @@ void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int *txrx)
 
 
 /****************************		MAIN MENU		*****************************/
-void mainMenu(int *menuchoice, char options[16][40], int* txrx)
+void mainMenu(int *menuchoice, char options[16][40] )
 {
 
 	printf("\n\n\n\n\n\nCoded Messaging System\n	By: Amy Wentzell and Kyle Dick\n	Version: 2023\n\n\n");
@@ -100,7 +102,7 @@ void mainMenu(int *menuchoice, char options[16][40], int* txrx)
 }
 
 /*************************************************		AUDIO FUNCTIONS		**********************************************/
-void RecordAudio(long lBigBufSize, short* iBigBuf)
+void RecordAudio(short* iBigBuf)
 {
 
 	printf("\n\n");
@@ -113,7 +115,7 @@ void RecordAudio(long lBigBufSize, short* iBigBuf)
 
 }
 
-void PlaybackAudio(long lBigBufSize, short* iBigBuf)
+void PlaybackAudio(short* iBigBuf)
 {
 	InitializePlayback();
 	printf("\nPlaying recording from buffer\n");
@@ -121,7 +123,7 @@ void PlaybackAudio(long lBigBufSize, short* iBigBuf)
 	ClosePlayback();
 }
 
-int SaveAudio(long lBigBufSize, short* iBigBuf)
+int SaveAudio(short* iBigBuf)
 {
 	char replay;
 	char c;																// used to flush extra input
@@ -161,12 +163,13 @@ int SaveAudio(long lBigBufSize, short* iBigBuf)
 	printf("\n");
 }
 
-void CompressMessage(char *MessageType, void* message, long lBigBufSize)
+void CompressMessage(char *MessageType, void* message)
 {
 	if (*MessageType == 'A')
 	{
-		SaveAudio(lBigBufSize, (short*)message);
+		SaveAudio((short*)message);
 		compression(message, lBigBufSize);
+		PlaybackAudio((short*)message);
 	}
 	else
 	{
@@ -176,7 +179,7 @@ void CompressMessage(char *MessageType, void* message, long lBigBufSize)
 
 
 
-int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage)
+int CommsTest( short int* audiomessage)
 {
 
 	
@@ -207,14 +210,14 @@ int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage)
 		printf("\n\nPress a key to receive ...");
 		getchar();
 		NHreceive((void**)audiomessage, lBigBufSize);
-		PlaybackAudio(lBigBufSize, audiomessage);
+		PlaybackAudio( audiomessage);
 	}
 
 }
 
 
 /****************************************		TEXT FUNCTIONS		**********************************************/
-void InputText(char* Message, int* TextBufSize)
+void InputText(char* Message)
 {
 
 	fflush(stdin); // Clear input buffer
@@ -258,7 +261,7 @@ int TextSettings(int* TextBufSize)
 	return(*TextBufSize);
 }
 
-int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Message, const int BUFSIZE, int* txrx)
+int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Message, const int BUFSIZE)
 {	
 	link p;
 	int randnum;
@@ -331,7 +334,7 @@ void compressionRatio(int compSize, int fileSize)
 
 }
 
-void encryptXOR(void* message, int* TextBufSize)
+void encryptXOR(void* message)
 {
 	char encBuf[140], decBuf[140], secretKey[140];
 	int messageLen = *TextBufSize;
@@ -372,7 +375,7 @@ void decryptXOR(int messageLen, char* decBuf, char* encBuf)
 
 }
 
-int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int onoff)
+int DD(void* message, char* messageType, int onoff)
 {
 
 	Header rxHeader{};												// Header received
@@ -388,7 +391,7 @@ int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int
 	if (onoff == 0)
 	{
 		printf("\n\nMessage: %s\n\n", (char*)message);
-		PlaybackAudio(lBigBufSize, (short*)message);
+		PlaybackAudio( (short*)message);
 	}
 	else
 	{
@@ -405,22 +408,22 @@ int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int
 			printf("\nDecompressing the text from RLE... \n");
 			// rxPayload = decompress(rxPayload)
 
-			RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
+			RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *TextBufSize * sizeof(char));
 
 		}
 		else if (rxHeader.compression == 2) //Uncompress Huffman compression
 		{
 			printf("\nDecompressing the text from Huffman... \n");
 
-			Huffman_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, rxHeader.payloadSize, *textBufSize * sizeof(char));
-			compressionRatio(*(int*)message, *textBufSize * sizeof(char));
+			Huffman_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, rxHeader.payloadSize, *TextBufSize * sizeof(char));
+			compressionRatio(*(int*)message, *TextBufSize * sizeof(char));
 		}
 		else if (rxHeader.compression == 3) //Uncompress both huffman and RLE compression
 		{
 			printf("\nDecompressing the text from both compression styles... \n");
 
-			RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
-			Huffman_Uncompress((unsigned char*)message, (unsigned char*)rxPayload, rxHeader.payloadSize, *textBufSize * sizeof(char));
+			RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *TextBufSize * sizeof(char));
+			Huffman_Uncompress((unsigned char*)message, (unsigned char*)rxPayload, rxHeader.payloadSize, *TextBufSize * sizeof(char));
 
 		}
 		else {
@@ -430,7 +433,7 @@ int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int
 	return(0);
 }
 
-void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOnOff, int* txrx, char* MessageType)
+void SendReceive(void* message, int headerOnOff, char* MessageType)
 {
 
 	switch (*txrx)
@@ -441,20 +444,20 @@ void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOn
 			printf("\n\nPress a key to receive...");
 			getchar();
 			receive(&rxHeader, (void**)message);
-			DD(message, MessageType, TextBufSize, lBigBufSize, headerOnOff);
+			DD(message, MessageType, headerOnOff);
 		}
 		else
 		{
 			printf("\n\nPress a key to receive...");
 			getchar();
 			NHreceive((void**)message, sizeof(message));
-			DD(message, MessageType, TextBufSize, lBigBufSize, headerOnOff);
+			DD(message, MessageType, headerOnOff);
 		}
 		break;
 	case 1:
 		switch (*MessageType)
 		{
-		case 'A':
+		case 'T':
 			if (headerOnOff == 1)
 			{
 				printf("\n\nPress a key to transmit ...");
@@ -465,10 +468,10 @@ void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOn
 			{
 				printf("\n\nPress a key to transmit ...");
 				getchar();
-				NHtransmit((char*)message, sizeof(message));
+				NHtransmit((char*)message, sizeof(message)+1);
 			}
 			break;
-		case 'T':
+		case 'A':
 			if (headerOnOff == 1)
 			{
 				printf("\n\nPress a key to transmit ...");

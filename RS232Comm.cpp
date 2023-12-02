@@ -15,11 +15,12 @@
 extern const int BUFSIZE;							// Buffer size
 extern wchar_t COMPORT_Rx[];
 extern wchar_t COMPORT_Tx[];
-extern HANDLE hCom;								// Pointer to the selected COM port (Receiver)
+extern HANDLE hCom;									// Pointer to the selected COM port (Receiver)
 extern int nComRate;								// Baud (Bit) rate in bits/second 
 extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
 extern int* txrx;
+extern DWORD bytesRead;
 
 //extern int com;
 wchar_t COMPORT[5];
@@ -27,19 +28,23 @@ wchar_t COMPORT[5];
 
 void NHtransmit(void* Payload, long int buffersize)
 {
-	initPort();						// Initialize the Tx port
-	outputToPort(Payload, buffersize);				// Send payload
+	initPort();															// Initialize the Tx port
+	outputToPort(Payload, buffersize);									// Send payload
 	Sleep(500);															// Allow time for signal propagation on cable 
-	purgePort();													// Purge the Tx port
+	purgePort();														// Purge the Tx port
 	CloseHandle(hCom);													// Close the handle to Tx port 
 }
 
 DWORD NHreceive(void** Payload, long int buffersize)
 {
-	DWORD bytesRead;
 	initPort();				// Initialize the Rx port
-	Payload = (void**)malloc(buffersize);				// Allocate buffer memory to receive payload. Will have to recast these bytess later to a specific data type / struct / etc - rembmer top free it in main()
-	bytesRead = inputFromPort(Payload, buffersize);// Receive payload 
+	Payload = (void**)malloc(buffersize);					// Allocate buffer memory to receive payload. Will have to recast these bytess later to a specific data type / struct / etc - rembmer top free it in main()
+	bytesRead = inputFromPort(Payload, buffersize);			// Receive payload 
+	if (1 <= bytesRead && bytesRead <= 140)
+	{
+		char* mesg = (char*)(Payload);
+		mesg[bytesRead] = '\0';
+	}
 	purgePort();													// Purge the Rx port
 	CloseHandle(hCom);													// Close the handle to Rx port 
 	return bytesRead;													// Number of bytes read

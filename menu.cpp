@@ -19,6 +19,7 @@ extern int nComRate;								// Baud (Bit) rate in bits/second
 extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
 extern int* txrx;
+extern long lBigBufSize;
 
 /**************		message.h		****************/
 extern int NumQuotes;
@@ -26,7 +27,7 @@ extern int* TextBufSize;
 /************		AUDIO FILE		 ************/
 extern char inputfilename[30];
 
-void menu(void* message, long int* Indices, int* LengthMessage, int *menuchoice, int *RecordTime, long lBigBufSize, Header txHeader, Header rxHeader)
+void menu(void* message, long int* Indices, int* LengthMessage, int *menuchoice, int *RecordTime, Header txHeader, Header rxHeader)
 {
 	
 	int woohoo = FALSE;	//do while loop of menu
@@ -74,54 +75,57 @@ void menu(void* message, long int* Indices, int* LengthMessage, int *menuchoice,
 		case 0: //Choose the setting here
 
 			
-			mainMenu(menuchoice, options, txrx);
+			mainMenu(menuchoice, options);
 			
 			break;
 			/*****************************	QUEUES TEST	*****************************/
 		case 1:
-			QueuesTest(NumQuotes, Indices, LengthMessage, (char*)message, 140, txrx);
+			QueuesTest(NumQuotes, Indices, LengthMessage, (char*)message, 140);
 			
 			*menuchoice = 0;
 			break;
 			/*************************		COMMS TEST		****************************/
 		case 2: //Transmit and Receive Test
 			
-			CommsTest(txrx, lBigBufSize, (short*)message);
+			CommsTest((short*)message);
 			
 			*menuchoice = 0;
 			break;
 			/************************	INPUT TEXT MESSAGE	****************************/
 		case 3:
-			InputText((char*)message, TextBufSize);
+			InputText((char*)message);
 			*MessageType = 'T';
 			*menuchoice = 0;
 			break;
 			/***********************	RECORD AUDIO MESSAGE	************************/
 		case 4:
 			lBigBufSize = *RecordTime * SAMPLES_SEC;
-			RecordAudio(lBigBufSize, (short *)message);
+			RecordAudio((short *)message);
 			*MessageType = 'A';
 			*menuchoice = 0;
 			break;
 			/*******************	SAVE AUDIO MESSAGE TO FILE		*********************/
 		case 5:
-			SaveAudio(lBigBufSize, (short*)message);
+			SaveAudio((short*)message);
 			*menuchoice = 0;
 			break;
 			/***********************	PLAYBACK AUDIO MESSAGE	*************************/
 		case 6:
-			PlaybackAudio(lBigBufSize, (short*)message);
+			PlaybackAudio((short*)message);
 			*menuchoice = 0;
 			break;
 			/**********************		COMPRESS MESSAGE		*************************/
 		case 7:
-			CompressMessage(MessageType, (short*)message, lBigBufSize);
-			PlaybackAudio(lBigBufSize, (short*) message);
+			CompressMessage(MessageType, (short*)message);
+			
 			*menuchoice = 0;
 			break;
 			/***********************	ENCRYPT MESSAGE		**************************/
 		case 8:
-			encryptXOR(message, TextBufSize);
+			if (*MessageType == 'A')
+			{
+				encryptXOR(message);
+			}
 			*menuchoice = 0;
 			break;
 			/************************	HEADER SETTINGS		**************************/
@@ -131,7 +135,7 @@ void menu(void* message, long int* Indices, int* LengthMessage, int *menuchoice,
 			break;
 			/************************	SEND / RECEIVE MESSAGE		**************************/
 		case 10:
-			SendReceive( message, TextBufSize, lBigBufSize, headerOnOff, txrx, MessageType);
+			SendReceive( message, headerOnOff, MessageType);
 			*menuchoice = 0;
 			break;
 			/***************		ADD MESSAGE TO QUEUE		*******************/

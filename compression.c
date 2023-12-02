@@ -4,6 +4,7 @@
 #include "rle.h"
 #include "huffman.h"
 
+
 void compression(void *message, long lBigBufSize)
 {
 	char choice; //for input

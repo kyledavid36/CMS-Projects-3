@@ -18,7 +18,7 @@ Authors: Amy Wentzell and Kyle Dick
 #include "sound.h"
 #include "Header.h"
 #include "message.h"
-
+#include "compression.h"
 
 //
 //void Sender(void* buffer, long int size); //sending function
@@ -37,6 +37,7 @@ int NSamples =  DEFAULT_NSAMPLES;
 int AudBufSize = 15 * SAMPLES_SEC;
 int SamplesSec = SAMPLES_SEC;
 
+long lBigBufSize;
 //Text
 int *TextBufSize;
 
@@ -54,8 +55,8 @@ int* txrx;
 //wchar_t COMPORT_Tx[] = L"COM8";					// COM port used for Tx (use L"COM8" for transmit program)
 
 ////Physical ports
-wchar_t COMPORT_Rx[5] = L"COM5";						// Check device manager after plugging device in and change this port
-wchar_t COMPORT_Tx[5] = L"COM3";						// Check device manager after plugging device in and change this port
+wchar_t COMPORT_Rx[5] = L"COM4";						// Check device manager after plugging device in and change this port
+wchar_t COMPORT_Tx[5] = L"COM6";						// Check device manager after plugging device in and change this port
 ////wcsncpy(COMPORT_Tx, L"COM", 3);
 //COMPORT_Tx[0] = L'C';
 
@@ -64,10 +65,11 @@ wchar_t COMPORT_Tx[5] = L"COM3";						// Check device manager after plugging dev
 
 // Communication variables and parameters
 HANDLE hCom;										// Pointer to the selected COM port (Receiver)
-int nComRate = 230400;//9600*16;								// Baud (Bit) rate in bits/second 
+int nComRate = 460800;//9600*16;								// Baud (Bit) rate in bits/second 
 int nComBits = 8;									// Number of bits per frame
 COMMTIMEOUTS timeout;								// A commtimeout struct variable
 
+DWORD bytesRead;
 
 Header txHeader;						// Header transmitted 
 Header rxHeader;						// Header received
@@ -110,9 +112,10 @@ int main()
 
 
 
-	setup(menuchoice, TextBufSize, RecordTime, txrx);
+	setup(menuchoice, RecordTime);
 
-	menu(message, Indices, LengthMessage, menuchoice, RecordTime, AudBufSize, rxHeader, txHeader);
+	lBigBufSize = SAMPLES_SEC * (*RecordTime);
+	menu(message, Indices, LengthMessage, menuchoice, RecordTime, rxHeader, txHeader);
 
 	free(message);
 	free(Indices);
@@ -123,27 +126,3 @@ int main()
 	return(0);
 
 }
-
-
-
-
-
-
-//
-//
-//void Sender(void *buffer, long int size)
-//{
-//	initPort(&hComTx, COMPORT_Tx, nComRate, nComBits, timeout);						// Initialize the Tx port
-//	Sleep(500);
-//	outputToPort(&hComTx, buffer, size);											// Send string to port - include space for '\0' termination
-//	Sleep(500);																		// Allow time for signal propagation on cable 
-//}
-//
-//int Receiver(void *buffer, long int size)
-//{
-//	initPort(&hComRx, COMPORT_Rx, nComRate, nComBits, timeout);						// Initialize the Rx port
-//	Sleep(500);
-//	DWORD bytesRead;
-//	bytesRead = inputFromPort(&hComRx, buffer, size);								// Receive string from port
-//	return(bytesRead);
-//}

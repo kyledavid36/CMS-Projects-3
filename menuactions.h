@@ -2,33 +2,33 @@
 #include "Queues.h"
 
 
-void setup(int* menuchoice, int* TextBufSize, int* RecordTime, int* txrx);  //comms, text buffer size, and recording time
+void setup(int* menuchoice, int* RecordTime);  //comms, text buffer size, and recording time
 
-void mainMenu(int* menuchoice, char options[16][40], int *txrx);
+void mainMenu(int* menuchoice, char options[16][40]);
 
-int QueuesTest(int NumQuotes, long int* Indices, int* LengthMessage, char* Message, const int BUFSIZE, int* txrx);
+int QueuesTest(int NumQuotes, long int* Indices, int* LengthMessage, char* Message, const int BUFSIZE);
 
-int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage);
+int CommsTest( short int* audiomessage);
 
-void InputText(char *Message, int *TextBufSize);
+void InputText(char *Message);
 
-void RecordAudio(long lBigBufSize, short* iBigBuf);
+void RecordAudio( short* iBigBuf);
 
-void PlaybackAudio(long lBigBufSize, short* iBigBuf);
+void PlaybackAudio( short* iBigBuf);
 
-int SaveAudio(long lBigBufSize, short* iBigBuf);
+int SaveAudio( short* iBigBuf);
 
-void CompressMessage(char* MessageType, void* message, long lBigBufSize);
+void CompressMessage(char* MessageType, void* message);
 
 void AddMessageToQueue(link p, void* message);
 
 void myFlushAll();
 
-int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize, int onoff);
+int DD(void* message, char* messageType, int onoff);
 
-void SendReceive(void* message, int* TextBufSize, long lBigBufSize, int headerOnOff, int* txrx, char* MessageType);
+void SendReceive(void* message, int headerOnOff,  char* MessageType);
 
-void encryptXOR(void* message, int* TextBufSize);
+void encryptXOR(void* message);
 
 void decryptXOR(int messageLen, char* decBuf, char* encBuf);
 
