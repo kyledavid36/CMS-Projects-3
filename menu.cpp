@@ -20,6 +20,7 @@ extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
 extern int* txrx;
 extern long lBigBufSize;
+extern int buffersize; //size of buffer before compression
 
 /**************		message.h		****************/
 extern int NumQuotes;
@@ -27,12 +28,13 @@ extern int* TextBufSize;
 /************		AUDIO FILE		 ************/
 extern char inputfilename[30];
 
-void menu(void* message, long int* Indices, int* LengthMessage, int *menuchoice, int *RecordTime, Header txHeader, Header rxHeader)
+void menu(void* message, long int* Indices, int* LengthMessage, int* menuchoice, int* RecordTime, Header txHeader, Header rxHeader, unsigned int insize, unsigned char* buf, long* compsize)
 {
 	
 	int woohoo = FALSE;	//do while loop of menu
 
-	
+	int compress = FALSE;
+	int encrypt = FALSE;
 
 	/**************		QUEUES	LINKS			***********/
 	link p;
@@ -116,16 +118,14 @@ void menu(void* message, long int* Indices, int* LengthMessage, int *menuchoice,
 			break;
 			/**********************		COMPRESS MESSAGE		*************************/
 		case 7:
-			CompressMessage(MessageType, (short*)message);
-			
+			CompressMessage(MessageType, (short*)message, insize, buf, compsize);
+			compress = TRUE;
 			*menuchoice = 0;
 			break;
 			/***********************	ENCRYPT MESSAGE		**************************/
 		case 8:
-			if (*MessageType == 'A')
-			{
-				encryptXOR(message);
-			}
+			encryptXOR(message);
+			encrypt = TRUE;
 			*menuchoice = 0;
 			break;
 			/************************	HEADER SETTINGS		**************************/

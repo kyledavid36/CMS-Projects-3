@@ -38,8 +38,8 @@ void NHtransmit(void* Payload, long int buffersize)
 DWORD NHreceive(void** Payload, long int buffersize)
 {
 	initPort();				// Initialize the Rx port
-	Payload = (void**)malloc(buffersize);					// Allocate buffer memory to receive payload. Will have to recast these bytess later to a specific data type / struct / etc - rembmer top free it in main()
-	bytesRead = inputFromPort(Payload, buffersize);			// Receive payload 
+	*Payload = (void*)malloc(buffersize);					// Allocate buffer memory to receive payload. Will have to recast these bytess later to a specific data type / struct / etc - rembmer top free it in main()
+	bytesRead = inputFromPort(*Payload, buffersize);			// Receive payload 
 	if (1 <= bytesRead && bytesRead <= 140)
 	{
 		char* mesg = (char*)(Payload);
@@ -64,7 +64,6 @@ void transmit(Header* txHeader, void* txPayload) {
 
 DWORD receive(Header* rxHeader, void** rxPayload) {
 	// Note: Pointer to rxPayload buffer (pointer to a pointer) is passed to this function since this function malloc's the amount of memory required - need to free it in main()
-	DWORD bytesRead;  
 	initPort();				// Initialize the Rx port
 	inputFromPort(rxHeader, sizeof(Header));						// Read in Header first (which is a standard number of bytes) to get size of payload 
 	*rxPayload = (void*)malloc((*rxHeader).payloadSize);				// Allocate buffer memory to receive payload. Will have to recast these bytess later to a specific data type / struct / etc - rembmer top free it in main()

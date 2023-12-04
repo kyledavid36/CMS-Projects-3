@@ -18,7 +18,7 @@ void PlaybackAudio( short* iBigBuf);
 
 int SaveAudio( short* iBigBuf);
 
-void CompressMessage(char* MessageType, void* message);
+void CompressMessage(char* MessageType, void* message, unsigned int insize, unsigned char* buf, long* compsize);
 
 void AddMessageToQueue(link p, void* message);
 
