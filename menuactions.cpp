@@ -19,6 +19,7 @@ Author: Amy Wentzell
 #include "rle.c"
 #include "huffman.h"
 #include "encrypt.h"
+#include "VoteOn.h"
 
 
 // Declare constants, variables and communication parameters
@@ -202,15 +203,16 @@ int CommsTest( short int* audiomessage)
 		printf("\n\nPress a key to transmit ...");
 		getchar();
 		
-		NHtransmit(audiomessage, lBigBufSize * 2);
+		NHtransmit((void*)audiomessage, lBigBufSize*2);
 
 	}
 	else
 	{
 		printf("\n\nPress a key to receive ...");
 		getchar();
-		NHreceive((void**)audiomessage, lBigBufSize);
-		PlaybackAudio( audiomessage);
+		NHreceive((void**)audiomessage, lBigBufSize*2);
+		printf("\n\n %hd \n\n",*audiomessage);
+		PlaybackAudio(audiomessage);
 	}
 
 }
@@ -283,7 +285,9 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			printf("Message Sent: %s\n\n", Message);
 			
 			Queues.sid = 1;
-			Queues.rid = 0;
+			Queues.rid[0] = 0;
+			Queues.rid[1] = 1;
+			Queues.rid[2] = 1;
 			Queues.payloadSize = BUFSIZE + 1;		// Number of bytes in payload after this header
 			Queues.payLoadType = 0;			// 0: Text, 1: Audio, 2: Image etc.
 			Queues.encryption = 0;			// 0: None, 1: XOR,	  2: Vigenere	3: Both
@@ -293,6 +297,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			printf("\n\nPress a key to transmit ...");
 			getchar();
 			transmit(&Queues, Message);
+
 
 			//Sleep(3500);
 		}
@@ -336,8 +341,8 @@ void compressionRatio(int compSize, int fileSize)
 
 void encryptXOR(void* message)
 {
-	char encBuf[140], decBuf[140], secretKey[140];
-	int messageLen = *TextBufSize;
+	char encBuf[200], decBuf[200], secretKey[140];
+	int messageLen = sizeof(message)*2; //*2 makes space for more text in the buffer
 	int secretKeyLen;
 	//int encType;
 	int i;
@@ -345,6 +350,7 @@ void encryptXOR(void* message)
 	printf("Please enter a single word encryption key: ");
 	scanf_s("%s", secretKey, 139);
 	secretKeyLen = strlen(secretKey);
+	secretKey[secretKeyLen] = '\0';
 
 	printf("Message will be encrypted to hexidecimal using XOR encryption: \n");
 
@@ -358,22 +364,20 @@ void encryptXOR(void* message)
 		printf(" %02x", encBuf[i]);
 	}
 
-}
-
-void decryptXOR(int messageLen, char* decBuf, char* encBuf)
-{
-	//Decrypt the message (xor)
-
-	int secretKeyLen;
-	char secretKey[140];
-	printf("Please enter a single word encryption key: ");
+	printf("\n\nPlease enter a single word key that matches the encryption key: ");
 	scanf_s("%s", secretKey, 139);
+	printf("\n\n Now decrypting the messsage...");
+	
 	secretKeyLen = strlen(secretKey);
 	secretKey[secretKeyLen] = '\0';
+	//messageLen = sizeof(encBuf);
 	xorCipher(encBuf, messageLen, secretKey, secretKeyLen, decBuf);
 	printf("\nXOR Decrypted Message: %s\n\n\n\n", decBuf);                       // Can print as a string
 
+
 }
+
+
 
 int DD(void* message, char* messageType, int onoff)
 {
@@ -399,7 +403,7 @@ int DD(void* message, char* messageType, int onoff)
 			printf("\nDecrypting the message:...\n");
 
 			//Would you like to decrypt the message (Y/N)?
-			decryptXOR(rxHeader.payloadSize, (char*)message, (char*)rxPayload);
+			//decryptXOR((void*)message);
 		}
 		else {
 			printf("\nMessage is not encrypted\n");
@@ -433,6 +437,37 @@ int DD(void* message, char* messageType, int onoff)
 	return(0);
 }
 
+void voteOnRid()//pass in rxHeader
+{
+	//the size of the rid is 3 right now, pass it in when it becomes user defined
+
+	Header rxHeader;
+	int i, w, y, z;
+
+	//setting the static variables here works
+	w = rxHeader.rid[0] = 0;
+	y = rxHeader.rid[1] = 1;
+	z = rxHeader.rid[2] = 1;
+	int* x[] = { &w,&y,&z };
+
+	//next try user defined rid from transmit to receive.
+	//search how to fill a user defined array 
+
+	// Prompt the user to enter values for each element
+	/*for (int i = 0; i < 3; ++i) {
+		printf("Enter value for element %d: ", i + 1);
+		scanf("%d", &userArray[i]);
+	}
+
+	printf("\n Press enter to transmit the rid?");
+	getchar();*/
+
+
+	i = VoteOn((void**)x, 3, sizeof(int));			// Again notice that x is cast as a 'pointer to a pointer' (using **) 
+	printf("Voting on rid returned %d\n", i);
+
+}
+
 void SendReceive(void* message, int headerOnOff, char* MessageType)
 {
 
@@ -445,6 +480,7 @@ void SendReceive(void* message, int headerOnOff, char* MessageType)
 			getchar();
 			receive(&rxHeader, (void**)message);
 			DD(message, MessageType, headerOnOff);
+			voteOnRid();
 		}
 		else
 		{
@@ -501,3 +537,4 @@ void AddMessageToQueue(link p, void *message)
 	p->Data.rxBuff = message;
 	AddToQueue(p);
 }
+
