@@ -27,6 +27,8 @@ extern int NumQuotes;
 extern int* TextBufSize;
 /************		AUDIO FILE		 ************/
 extern char inputfilename[30];
+extern unsigned char* buf;
+extern char secretKey[];
 
 void menu(void* message, long int* Indices, int* LengthMessage, int* menuchoice, int* RecordTime, Header txHeader, Header rxHeader, unsigned int insize, unsigned char* buf, long* compsize)
 {
@@ -124,7 +126,7 @@ void menu(void* message, long int* Indices, int* LengthMessage, int* menuchoice,
 			break;
 			/***********************	ENCRYPT MESSAGE		**************************/
 		case 8:
-			encryptXOR(message);
+			encryptXOR(message, buf);
 			encrypt = TRUE;
 			*menuchoice = 0;
 			break;
@@ -135,7 +137,7 @@ void menu(void* message, long int* Indices, int* LengthMessage, int* menuchoice,
 			break;
 			/************************	SEND / RECEIVE MESSAGE		**************************/
 		case 10:
-			SendReceive( message, headerOnOff, MessageType);
+			SendReceive( message, headerOnOff, MessageType, compress, encrypt);
 			*menuchoice = 0;
 			break;
 			/***************		ADD MESSAGE TO QUEUE		*******************/

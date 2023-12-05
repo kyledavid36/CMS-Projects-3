@@ -26,13 +26,15 @@ void myFlushAll();
 
 int DD(void* message, char* messageType, int onoff);
 
-void SendReceive(void* message, int headerOnOff,  char* MessageType);
+void SendReceive(void* message, int headerOnOff, char* MessageType, int compress, int encrypt);
 
-void encryptXOR(void* message);
+void encryptXOR(void* message, unsigned char* buf);
 
-void decryptXOR(int messageLen, char* decBuf, char* encBuf);
+void decryptXOR(void* message, unsigned char* buf);
 
 void compressionRatio(int compSize, int fileSize);
+
+void voteOnRid();
 //
 //int CRC(void* message, void* sentMessage);
 

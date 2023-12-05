@@ -35,6 +35,8 @@ extern long lBigBufSize;
 extern int* TextBufSize;
 extern int* txrx;
 extern int buffersize; //size of buffer before compression
+extern char secretKey[];
+unsigned char* buf;
 
 
 void myFlushAll()
@@ -336,17 +338,13 @@ void compressionRatio(int compSize, int fileSize)
 
 }
 
-void encryptXOR(void* message)
+void encryptXOR(void* message, unsigned char* buf)
 {
-	char encBuf[140], decBuf[140], secretKey[140];
-	int messageLen = *TextBufSize;
-	int secretKeyLen;
+	
+	int messageLen = sizeof(message) * 2;										//*2 makes space for more text in the buffer
+	int secretKeyLen = 14;
 	//int encType;
 	int i;
-
-	printf("Please enter a single word encryption key: ");
-	scanf_s("%s", secretKey, 139);
-	secretKeyLen = strlen(secretKey);
 
 	printf("Message will be encrypted to hexidecimal using XOR encryption: \n");
 
@@ -354,27 +352,27 @@ void encryptXOR(void* message)
 
 
 	// Encrypt the message (xor)
-	xorCipher(message, messageLen, secretKey, secretKeyLen, encBuf);
+	xorCipher(message, messageLen, secretKey, secretKeyLen, buf);
 	printf("XOR Encrypted message in hex:");                               // Will not print as a string so print in HEX, one byte at a time
 	for (i = 0; i < messageLen; i++) {
-		printf(" %02x", encBuf[i]);
+		printf(" %02x", buf[i]);
 	}
 
+	
 }
 
-void decryptXOR(int messageLen, char* decBuf, char* encBuf)
-{
-	//Decrypt the message (xor)
 
-	int secretKeyLen;
-	char secretKey[140];
-	printf("Please enter a single word encryption key: ");
-	scanf_s("%s", secretKey, 139);
+void decryptXOR(void* message, unsigned char* buf)
+{
+	int messageLen = sizeof(message) * 2;										//*2 makes space for more text in the buffer
+	int secretKeyLen = 14;
+	//int encType;
+	//Decrypt the message (xor)
 	secretKeyLen = strlen(secretKey);
 	secretKey[secretKeyLen] = '\0';
-	xorCipher((void*)encBuf, messageLen, (void*)secretKey, secretKeyLen, (void*)decBuf);
-	printf("\nXOR Decrypted Message: %s\n\n\n\n", decBuf);                       // Can print as a string
-
+	//messageLen = sizeof(encBuf);
+	xorCipher(buf, messageLen, secretKey, secretKeyLen, message);
+	printf("\nXOR Decrypted Message: %s\n\n\n\n", message);                       // Can print as a string
 }
 
 int DD(void* message, char* messageType, int onoff)
@@ -401,7 +399,7 @@ int DD(void* message, char* messageType, int onoff)
 			printf("\nDecrypting the message:...\n");
 
 			//Would you like to decrypt the message (Y/N)?
-			decryptXOR(rxHeader.payloadSize, (char*)message, (char*)rxPayload);
+			decryptXOR( (char*)message, buf);
 		}
 		else {
 			printf("\nMessage is not encrypted\n");
@@ -435,7 +433,7 @@ int DD(void* message, char* messageType, int onoff)
 	return(0);
 }
 
-void SendReceive(void* message, int headerOnOff, char* MessageType)
+void SendReceive(void* message, int headerOnOff, char* MessageType, int compress, int encrypt)
 {
 
 	switch (*txrx)
@@ -470,7 +468,14 @@ void SendReceive(void* message, int headerOnOff, char* MessageType)
 			{
 				printf("\n\nPress a key to transmit ...");
 				getchar();
-				NHtransmit(message, sizeof(message)+1);
+				if (encrypt == TRUE)
+				{
+					NHtransmit(buf, sizeof(buf) + 1);
+				}
+				else
+				{
+					NHtransmit(message, sizeof(message) + 1);
+				}
 			}
 			break;
 		case 'A':
@@ -484,6 +489,14 @@ void SendReceive(void* message, int headerOnOff, char* MessageType)
 			{
 				printf("\n\nPress a key to transmit ...");
 				getchar();
+				if (encrypt == TRUE || compress == TRUE)
+				{
+					NHtransmit(buf, sizeof(buf));
+				}
+				else
+				{
+					NHtransmit(message, sizeof(message));
+				}
 				NHtransmit(message, sizeof(message));
 			}
 			break;

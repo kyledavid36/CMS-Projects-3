@@ -79,7 +79,7 @@ int NumQuotes = fnumQuotes();
 
 /************		AUDIO FILE		 ************/
 char inputfilename[30] = "recording.dat";
-
+char secretKey[] = "CMSProjectsIII";
 
 
 #define MAX_NUM_MESSAGES 10
@@ -109,7 +109,6 @@ int main()
 
 	/*******************	BUFFERS ****************************/
 	void* message = (void*)malloc(AudBufSize * sizeof(short));
-
 	/***********	MESSAGE.CPP REQUIRED MALLOC	***************/
 	
 	long int* Indices = (long int*)malloc(NumQuotes * sizeof(long int));
