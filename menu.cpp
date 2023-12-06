@@ -8,104 +8,39 @@
 #include "rle.h"
 #include "huffman.h"
 #include "message.h"
+#include "VoteOn.h"
 #include "headerSettings.h"
 
 // Declare constants, variables and communication parameters
 extern const int BUFSIZE;							// Buffer size
 extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
 extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
-extern HANDLE hComRx;								// Pointer to the selected COM port (Receiver)
-extern HANDLE hComTx;								// Pointer to the selected COM port (Transmitter)
+extern HANDLE hCom;								// Pointer to the selected COM port (Receiver)
 extern int nComRate;								// Baud (Bit) rate in bits/second 
 extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
+extern int* txrx;
+extern long lBigBufSize;
+extern int buffersize; //size of buffer before compression
 
+/**************		message.h		****************/
+extern int NumQuotes;
+extern int* TextBufSize;
+/************		AUDIO FILE		 ************/
+extern char inputfilename[30];
+extern unsigned char* buf;
+extern char secretKey[];
 
-//void COMPORT(char comT, char comR, wchar_t *COMPORT)
-//{
-//	
-//	switch (comT)
-//	{
-//	case '0':
-//
-//		COMPORT_Tx[3] = L"0";
-//		break;
-//	case '1':
-//		COMPORT_Tx[] = L"COM1";
-//		break;
-//	case '2':
-//		COMPORT_Tx[] = L"COM2";
-//		break;
-//	case '3':
-//		COMPORT_Tx[] = L"COM3";
-//		break;
-//	case '4':
-//		COMPORT_Tx[] = L"COM4";
-//		break;
-//	case '5':
-//		COMPORT_Tx[] = L"COM5";
-//		break;
-//	case '6':
-//		COMPORT_Tx[] = L"COM6";
-//		break;
-//	default:
-//		COMPORT_Tx[] = L"COM6";
-//		break;
-//	}
-//
-//	switch (comR)
-//	{
-//	case '0':
-//
-//		COMPORT_Rx[] = L"COM0";
-//		break;
-//	case '1':
-//		COMPORT_Rx[] = L"COM1";
-//		break;
-//	case '2':
-//		COMPORT_Rx[] = L"COM2";
-//		break;
-//	case '3':
-//		COMPORT_Rx[] = L"COM3";
-//		break;
-//	case '4':
-//		COMPORT_Rx[] = L"COM4";
-//		break;
-//	case '5':
-//		COMPORT_Rx[] = L"COM5";
-//		break;
-//	case '6':
-//		COMPORT_Rx[] = L"COM6";
-//		break;
-//	default:
-//		COMPORT_Rx[] = L"COM3";
-//		break;
-//	}
-//
-//}
-
-
-
-
-
-void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, long lBigBufSize, short* iBigBuf, int *txrx, LPCSTR COMPORT, Header txHeader, Header rxHeader)
+void menu(void* message, long int* Indices, int* LengthMessage, int* menuchoice, int* RecordTime, Header txHeader, Header rxHeader, unsigned int insize, unsigned char* buf, long* compsize)
 {
 	
 	int woohoo = FALSE;	//do while loop of menu
 
-	/*******************	BUFFERS ****************************/
-	void* message = (void*)malloc(lBigBufSize * sizeof(short));
+	int compress = FALSE;
+	int encrypt = FALSE;
 
 	/**************		QUEUES	LINKS			***********/
 	link p;
-
-	/************		AUDIO FILE		 ************/
-	char* inputfilename = (char*)malloc(30 * sizeof(char));
-	char AudioFile[30] = "recording.dat";
-	inputfilename = AudioFile;
-
-	/***************	COMPRESSION BUFFER	*****************/
-	unsigned char* in = (unsigned char*)malloc(593920000 * sizeof(short));
 
 	/************		Message Type	*********************/
 	char* MessageType;
@@ -115,14 +50,11 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 	/***********	HEADER ON/OFF VARIABLE***********/
 	int headerOnOff = 0;
 
-	/***********	MESSAGE.CPP REQUIRED MALLOC	***************/
-	int NumQuotes = fnumQuotes();
-	long int* Indices = (long int*)malloc(NumQuotes * sizeof(long int));
-	int * LengthMessage = (int*)malloc(NumQuotes * sizeof(int));
+	
 
 	
 
-	char options[20][40] = {
+	char options[16][40] = {
 		"QUEUES TEST (Tx/Rx)",
 		"AUDIO / COMMS TEST (Tx/Rx)",
 		"INPUT TEXT MESSAGE (Tx)",
@@ -138,84 +70,65 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 		"POP FROM THE HEAD (Rx)",
 		"CLEAR QUEUE (Rx)",
 		"ERROR DETECTION / CORRECTION (Rx)",
-		"PHONE BOOK (Tx)",
 		"Exit" };
 
 	do
 	{
 		switch (*menuchoice)
 		{
-			/*******************************	SETUP	*******************************/
-		case 'S':
-
-			
-			setup(menuchoice, TextBufSize, RecordTime, compointer, txrx);
-			
-			printf("\n			SETUP SUMMARY:\n");
-			
-			printf("				COM Port: COM%d\n", *compointer);
-			printf("				Text Buffer Size: %d\n", *TextBufSize);
-			printf("				Record Time: %d seconds\n\n", *RecordTime);
-			myFlushAll();
-
-			if (*compointer == 0) { COMPORT = "COM0"; }
-			if (*compointer == 1) { COMPORT = "COM1"; }
-			if (*compointer == 2) { COMPORT = "COM2"; }
-			if (*compointer == 3) { COMPORT = "COM3"; }
-			if (*compointer == 4) { COMPORT = "COM4"; }
-			if (*compointer == 5) { COMPORT = "COM5"; }
-			if (*compointer == 6) { COMPORT = "COM6"; }
-
-			break;
-
 			/******************************		MAIN MENU	***************************/
 		case 0: //Choose the setting here
 
-			mainMenu(menuchoice, options, txrx);
+			
+			mainMenu(menuchoice, options);
 			
 			break;
 			/*****************************	QUEUES TEST	*****************************/
 		case 1:
-			QueuesTest(NumQuotes, Indices, LengthMessage, (char*)message, 140, txrx);
+			QueuesTest(NumQuotes, Indices, LengthMessage, (char*)message, 140);
 			
 			*menuchoice = 0;
 			break;
 			/*************************		COMMS TEST		****************************/
 		case 2: //Transmit and Receive Test
-			CommsTest(txrx, lBigBufSize, (short*)message);
+			
+			CommsTest((short*)message);
 			
 			*menuchoice = 0;
 			break;
 			/************************	INPUT TEXT MESSAGE	****************************/
 		case 3:
-			InputText((char*)message, TextBufSize);
+			InputText((char*)message);
 			*MessageType = 'T';
 			*menuchoice = 0;
 			break;
 			/***********************	RECORD AUDIO MESSAGE	************************/
 		case 4:
 			lBigBufSize = *RecordTime * SAMPLES_SEC;
-			RecordAudio(lBigBufSize, iBigBuf);
+			RecordAudio((short *)message);
 			*MessageType = 'A';
 			*menuchoice = 0;
 			break;
 			/*******************	SAVE AUDIO MESSAGE TO FILE		*********************/
 		case 5:
-			SaveAudio(lBigBufSize, iBigBuf);
+			SaveAudio((short*)message);
 			*menuchoice = 0;
 			break;
 			/***********************	PLAYBACK AUDIO MESSAGE	*************************/
 		case 6:
-			PlaybackAudio(lBigBufSize, iBigBuf);
+			PlaybackAudio((short*)message);
 			*menuchoice = 0;
 			break;
 			/**********************		COMPRESS MESSAGE		*************************/
 		case 7:
-			CompressMessage(MessageType, inputfilename, in, lBigBufSize, iBigBuf);
+			CompressMessage(MessageType, (short*)message, insize, buf, compsize);
+			compress = TRUE;
 			*menuchoice = 0;
 			break;
 			/***********************	ENCRYPT MESSAGE		**************************/
 		case 8:
+			encryptXOR(message, buf);
+			encrypt = TRUE;
 			*menuchoice = 0;
 			break;
 			/************************	HEADER SETTINGS		**************************/
@@ -225,8 +138,7 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			break;
 			/************************	SEND / RECEIVE MESSAGE		**************************/
 		case 10:
-
-			SendReceive(message, headerOnOff, txrx, MessageType);
+			SendReceive( message, headerOnOff, MessageType, compress, encrypt);
 			*menuchoice = 0;
 			break;
 			/***************		ADD MESSAGE TO QUEUE		*******************/
@@ -257,14 +169,11 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			break;
 			/******************		ERROR DETECTION / CORRECTION		***************/
 		case 15:
-			*menuchoice = 0;
-			break;
-			/**********************		BST PHONEBOOK		********************/
-		case 16:
+			voteOnRid();
 			*menuchoice = 0;
 			break;
 			/*****************************		EXIT	*****************************/
-		case 17:
+		case 16:
 			woohoo = TRUE;
 			break;
 		default:
@@ -272,12 +181,5 @@ void menu(int *menuchoice, int *TextBufSize, int *RecordTime, int *compointer, l
 			break;
 		}
 	} while (!woohoo);
-
-	
-	free(message);
-	free(inputfilename);
-	free(in);
-	free(Indices);
-	free(LengthMessage);
 }
 

@@ -4,8 +4,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-	int compression(char *inputfilename, unsigned char *in);
+	
+	void compression(void* message, int insize, unsigned char* buf, long* compsize);
 
 #ifdef __cplusplus
 }

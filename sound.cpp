@@ -14,7 +14,7 @@ Details: Implementation - Contains functions for Windows sound API (sound record
 
 ////// BUFFERS
 short iBigBuf[SAMPLES_SEC * RECORD_TIME];
-long  lBigBufSize = SAMPLES_SEC * RECORD_TIME;	// total number of samples
+extern long  lBigBufSize;	// total number of samples
 
 // output and input channel parameters 
 static	int			g_nSamplesPerSec = SAMPLES_SEC;

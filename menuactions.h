@@ -2,39 +2,43 @@
 #include "Queues.h"
 
 
-void setup(int* menuchoice, int* TextBufSize, int* RecordTime, int* compointer, int *txrx);  //comms, text buffer size, and recording time
+void setup(int* menuchoice, int* RecordTime);  //comms, text buffer size, and recording time
 
-void mainMenu(int* menuchoice, char options[25][40], int *txrx);
+void mainMenu(int* menuchoice, char options[16][40]);
 
-int QueuesTest(int NumQuotes, long int* Indices, int* LengthMessage, char* Message, const int BUFSIZE, int* txrx);
+int QueuesTest(int NumQuotes, long int* Indices, int* LengthMessage, char* Message, const int BUFSIZE);
 
-int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage);
+int CommsTest( short int* audiomessage);
 
-void InputText(char *Message, int *TextBufSize);
+void InputText(char *Message);
 
-void RecordAudio(long lBigBufSize, short* iBigBuf);
+void RecordAudio( short* iBigBuf);
 
-void PlaybackAudio(long lBigBufSize, short* iBigBuf);
+void PlaybackAudio( short* iBigBuf);
 
-int SaveAudio(long lBigBufSize, short* iBigBuf);
+int SaveAudio( short* iBigBuf);
 
-void CompressMessage(char* MessageType, char* inputfilename, unsigned char* in, long lBigBufSize, short* iBigBuf);
-
-void SendReceive(void* message, int headerOnOff, int* txrx, char* MessageType);
+void CompressMessage(char* MessageType, void* message, unsigned int insize, unsigned char* buf, long* compsize);
 
 void AddMessageToQueue(link p, void* message);
 
 void myFlushAll();
 
-int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize);
+void voteOnRid();
 
-void encryptXOR(void* message);
+int DD(void* message, char* messageType, int onoff);
 
-void decryptXOR(int messageLen, char* decBuf, char* encBuf);
+void SendReceive(void* message, int headerOnOff, char* MessageType, int compress, int encrypt);
+
+void encryptXOR(void* message, unsigned char* buf);
+
+void decryptXOR(void* message, unsigned char* buf);
 
 void compressionRatio(int compSize, int fileSize);
 
-int CRC(void* message, void* sentMessage);
+void voteOnRid();
+//
+//int CRC(void* message, void* sentMessage);
 
 
 //void getMessageFromUser(char* Message);

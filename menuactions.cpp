@@ -17,22 +17,27 @@ Author: Amy Wentzell
 #include "compression.h"
 #include "Header.h"
 #include "rle.c"
+#include "VoteOn.h"
 #include "huffman.h"
 #include "encrypt.h"
-#include "crc.h"
 
 
 // Declare constants, variables and communication parameters
 extern const int BUFSIZE;							// Buffer size
 extern wchar_t COMPORT_Rx[];						// COM port used for Rx 
 extern wchar_t COMPORT_Tx[];						// COM port used for Tx 
-extern HANDLE hComRx;								// Pointer to the selected COM port (Receiver)
-extern HANDLE hComTx;								// Pointer to the selected COM port (Transmitter)
+extern HANDLE hCom;								// Pointer to the selected COM port (Receiver)
 extern int nComRate;								// Baud (Bit) rate in bits/second 
 extern int nComBits;								// Number of bits per frame
 extern COMMTIMEOUTS timeout;						// A commtimeout struct variable
 extern Header txHeader;
 extern Header rxHeader;
+extern long lBigBufSize;
+extern int* TextBufSize;
+extern int* txrx;
+extern int buffersize; //size of buffer before compression
+extern char secretKey[];
+unsigned char* buf;
 
 
 void myFlushAll()
@@ -46,7 +51,7 @@ void myFlushAll()
 }
 
 /****************************		SETUP		*****************************/
-void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int* compointer, int *txrx)
+void setup(int *menuchoice, int *RecordTime)
 {
 
 	printf("Calibrating...\n");
@@ -55,16 +60,12 @@ void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int* compointer, 
 	scanf_s("%d", txrx);
 	myFlushAll();
 
-	printf("\n\n	Please input the COM port: \n\n	COM0 = 0\n	COM1 = 1\n	COM2 = 2\n	COM3 = 3\n	COM4 = 4\n	COM5 = 5\n	COM6 = 6\n\nChoice:	");
-	scanf_s("%d", compointer);
-	myFlushAll();
-
 	printf("\n\n	Please input the text buffer size (Max = 140, Min = 1): ");
 	scanf_s("%d", TextBufSize);
-
+	myFlushAll();
 	printf("\n\n	Please input the record time (Max = 10, Min = 1): ");
 	scanf_s("%d", RecordTime);
-
+	myFlushAll();
 
 	if (0 < *TextBufSize && *TextBufSize <= 140 && 0 < *RecordTime && *RecordTime <= 15 && *txrx >=0 && *txrx <= 1 )
 	{
@@ -76,12 +77,12 @@ void setup(int *menuchoice, int *TextBufSize, int *RecordTime, int* compointer, 
 		printf("\nERROR: invalid input.");
 		
 	}
-
+	*menuchoice = 0;
 }
 
 
 /****************************		MAIN MENU		*****************************/
-void mainMenu(int *menuchoice, char options[25][40], int* txrx)
+void mainMenu(int *menuchoice, char options[16][40] )
 {
 
 	printf("\n\n\n\n\n\nCoded Messaging System\n	By: Amy Wentzell and Kyle Dick\n	Version: 2023\n\n\n");
@@ -89,7 +90,7 @@ void mainMenu(int *menuchoice, char options[25][40], int* txrx)
 	
 	
 
-	for (int i = 1; i < 20; i++)
+	for (int i = 1; i < 17; i++)
 	{
 		printf("	(%d)	", i);
 		for (int j = 0; j < 40; j++)
@@ -106,7 +107,7 @@ void mainMenu(int *menuchoice, char options[25][40], int* txrx)
 }
 
 /*************************************************		AUDIO FUNCTIONS		**********************************************/
-void RecordAudio(long lBigBufSize, short* iBigBuf)
+void RecordAudio(short* iBigBuf)
 {
 
 	printf("\n\n");
@@ -119,7 +120,7 @@ void RecordAudio(long lBigBufSize, short* iBigBuf)
 
 }
 
-void PlaybackAudio(long lBigBufSize, short* iBigBuf)
+void PlaybackAudio(short* iBigBuf)
 {
 	InitializePlayback();
 	printf("\nPlaying recording from buffer\n");
@@ -127,7 +128,7 @@ void PlaybackAudio(long lBigBufSize, short* iBigBuf)
 	ClosePlayback();
 }
 
-int SaveAudio(long lBigBufSize, short* iBigBuf)
+int SaveAudio(short* iBigBuf)
 {
 	char replay;
 	char c;																// used to flush extra input
@@ -167,12 +168,13 @@ int SaveAudio(long lBigBufSize, short* iBigBuf)
 	printf("\n");
 }
 
-void CompressMessage(char *MessageType, char* inputfilename, unsigned char* in, long lBigBufSize, short *iBigBuf)
+void CompressMessage(char *MessageType, void* message, unsigned int insize, unsigned char* buf, long *compsize)
 {
 	if (*MessageType == 'A')
 	{
-		SaveAudio(lBigBufSize, iBigBuf);
-		compression(inputfilename, in);
+		SaveAudio((short*)message);
+		compression(message, insize, buf, compsize);
+		PlaybackAudio((short*)buf);
 	}
 	else
 	{
@@ -180,10 +182,12 @@ void CompressMessage(char *MessageType, char* inputfilename, unsigned char* in, 
 	}
 }
 
-int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage)
+
+
+int CommsTest( short int* audiomessage)
 {
 
-
+	
 	if (*txrx == 1)
 	{
 		FILE* f;
@@ -195,29 +199,30 @@ int CommsTest(int* txrx, long int lBigBufSize, short int* audiomessage)
 			printf("unable to open %s\n", "Test.dat");
 			return (0);
 		}
-		for (int i = 0; i < lBigBufSize; i++)
-		{
-			*(audiomessage++) = fgetc(f);
-		}
+		fread(audiomessage, sizeof(short), lBigBufSize, f);				// Record to new buffer iBigBufNew
 		fclose(f);
+		PlaybackAudio(audiomessage);
+		/*printf("%ld\n\n", lBigBufSize);*/
 		printf("\n\nPress a key to transmit ...");
 		getchar();
-		NHtransmit(audiomessage, lBigBufSize * 2, &hComTx, nComRate, nComBits, timeout);
+		/*printf("\n\n%hd\n\n", *audiomessage);*/
+		NHtransmit((void*)audiomessage, lBigBufSize * 2);
 
 	}
 	else
 	{
 		printf("\n\nPress a key to receive ...");
 		getchar();
-		NHreceive((void**)audiomessage, lBigBufSize, &hComRx, nComRate, nComBits, timeout);
-		PlaybackAudio(lBigBufSize, audiomessage);
+		NHreceive((void**) &audiomessage, lBigBufSize * 2);
+		/*printf("\n\n%hd\n\n", *audiomessage);*/
+		PlaybackAudio(audiomessage);
 	}
 
 }
 
 
 /****************************************		TEXT FUNCTIONS		**********************************************/
-void InputText(char* Message, int* TextBufSize)
+void InputText(char* Message)
 {
 
 	fflush(stdin); // Clear input buffer
@@ -261,7 +266,7 @@ int TextSettings(int* TextBufSize)
 	return(*TextBufSize);
 }
 
-int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Message, const int BUFSIZE, int* txrx)
+int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Message, const int BUFSIZE)
 {	
 	link p;
 	int randnum;
@@ -283,7 +288,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			printf("Message Sent: %s\n\n", Message);
 			
 			Queues.sid = 1;
-			Queues.rid = 0;
+			Queues.rid[0] = 0;
 			Queues.payloadSize = BUFSIZE + 1;		// Number of bytes in payload after this header
 			Queues.payLoadType = 0;			// 0: Text, 1: Audio, 2: Image etc.
 			Queues.encryption = 0;			// 0: None, 1: XOR,	  2: Vigenere	3: Both
@@ -292,7 +297,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			
 			printf("\n\nPress a key to transmit ...");
 			getchar();
-			transmit(&Queues, Message, &hComTx, nComRate, nComBits, timeout);
+			transmit(&Queues, Message);
 
 			//Sleep(3500);
 		}
@@ -303,7 +308,7 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 			printf("\n\nPress a key to receive...");
 			getchar();
 
-			bytesRead = receive(&QueuesRx, &(p->Data.rxBuff), &hComRx, nComRate, nComBits, timeout);
+			bytesRead = receive(&QueuesRx, &(p->Data.rxBuff));
 			
 			char* mesg = (char*)(p->Data.rxBuff);
 			mesg[bytesRead] = '\0';
@@ -326,73 +331,6 @@ int QueuesTest(int NumQuotes, long int *Indices, int * LengthMessage, char *Mess
 	return(0);
 }
 
-
-void SendReceive(void *message, int headerOnOff, int *txrx, char *MessageType)
-{
-	
-	switch (*txrx)
-		{
-		case 0:
-			if (headerOnOff == 1)
-			{
-				printf("\n\nPress a key to receive...");
-				getchar();
-				receive(&rxHeader, (void**)message, &hComRx, nComRate, nComBits, timeout);
-			}
-			else
-			{
-				printf("\n\nPress a key to receive...");
-				getchar();
-				NHreceive((void**)message, sizeof(message), &hComRx, nComRate, nComBits, timeout);
-			}
-			break;
-		case 1:
-			switch (*MessageType)
-				{
-				case 'A':
-					if (headerOnOff == 1)
-					{
-						printf("\n\nPress a key to transmit ...");
-						getchar();
-						transmit(&txHeader, (char*)message, &hComTx, nComRate, nComBits, timeout);
-					}
-					else
-					{
-						printf("\n\nPress a key to transmit ...");
-						getchar();
-						NHtransmit((char*)message, sizeof(message), &hComTx, nComRate, nComBits, timeout);
-					}
-					break;
-				case 'T':
-					if (headerOnOff == 1)
-					{
-						printf("\n\nPress a key to transmit ...");
-						getchar();
-						transmit(&txHeader, (short*)message, &hComTx, nComRate, nComBits, timeout);
-					}
-					else
-					{
-						printf("\n\nPress a key to transmit ...");
-						getchar();
-						NHtransmit((short*)message, sizeof(message), &hComTx, nComRate, nComBits, timeout);
-					}
-					break;
-				default:
-					break;
-				}
-			break;
-		default:
-			break;
-		}
-	
-}
-
-void AddMessageToQueue(link p, void *message)
-{
-	p->Data.rxBuff = message;
-	AddToQueue(p);
-}
-
 void compressionRatio(int compSize, int fileSize)
 {
 
@@ -401,20 +339,13 @@ void compressionRatio(int compSize, int fileSize)
 
 }
 
-void encryptXOR(void* message)
+void encryptXOR(void* message, unsigned char* buf)
 {
-	char encBuf[140], decBuf[140], secretKey[140];
-	int messageLen, secretKeyLen;
+	
+	int messageLen = sizeof(message) * 2;										//*2 makes space for more text in the buffer
+	int secretKeyLen = 14;
 	//int encType;
 	int i;
-
-	printf("Please enter message to encrypt: ");
-	scanf_s("%[^\n]s", message, 139);
-	messageLen = sizeof(message);
-
-	printf("Please enter a single word encryption key: ");
-	scanf_s("%s", secretKey, 139);
-	secretKeyLen = strlen(secretKey);
 
 	printf("Message will be encrypted to hexidecimal using XOR encryption: \n");
 
@@ -422,31 +353,59 @@ void encryptXOR(void* message)
 
 
 	// Encrypt the message (xor)
-	xorCipher(message, messageLen, secretKey, secretKeyLen, encBuf);
+	xorCipher(message, messageLen, secretKey, secretKeyLen, buf);
 	printf("XOR Encrypted message in hex:");                               // Will not print as a string so print in HEX, one byte at a time
 	for (i = 0; i < messageLen; i++) {
-		printf(" %02x", encBuf[i]);
+		printf(" %02x", buf[i]);
 	}
 
+	
 }
 
-void decryptXOR(int messageLen, char* decBuf, char* encBuf)
-{
-	//Decrypt the message (xor)
 
-	int secretKeyLen;
-	char secretKey[140];
-	printf("Please enter a single word encryption key: ");
-	scanf_s("%s", secretKey, 139);
+void decryptXOR(void* message, unsigned char* buf)
+{
+	int messageLen = sizeof(message) * 2;										//*2 makes space for more text in the buffer
+	int secretKeyLen = 14;
+	//int encType;
+	//Decrypt the message (xor)
 	secretKeyLen = strlen(secretKey);
 	secretKey[secretKeyLen] = '\0';
-	xorCipher(encBuf, messageLen, secretKey, secretKeyLen, decBuf);
-	printf("\nXOR Decrypted Message: %s\n\n\n\n", decBuf);                       // Can print as a string
+	//messageLen = sizeof(encBuf);
+	xorCipher(buf, messageLen, secretKey, secretKeyLen, message);
+	printf("\nXOR Decrypted Message: %s\n\n\n\n", message);                       // Can print as a string
+}
+
+void voteOnRid()//pass in rxHeader
+{
+	//the size of the rid is 3 right now, pass it in when it becomes user defined
+
+	Header rxHeader;
+	int i, w, y, z;
+
+	//setting the static variables here works
+	w = rxHeader.rid[0] = 0;
+	y = rxHeader.rid[1] = 1;
+	z = rxHeader.rid[2] = 1;
+	int* x[] = { &w,&y,&z };
+
+	//next try user defined rid from transmit to receive.
+	//search how to fill a user defined array 
+
+	printf("\n Press enter to transmit the rid?");
+	getchar(); 
+
+
+		i = VoteOn((void**)x, 3, sizeof(int));            // Again notice that x is cast as a 'pointer to a pointer' (using ) 
+	printf("\n\nVoting on rid returned %d\n", i);
 
 }
 
 
-int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize)
+
+
+
+int DD(void* message, char* messageType, int onoff)
 {
 
 	Header rxHeader{};												// Header received
@@ -458,252 +417,149 @@ int DD(void* message, char* messageType, int* textBufSize, long lBigBufSize)
 	printf("\n\nRxHeader.payLoadtype is %d\n\n", rxHeader.payLoadType);
 
 	// Use header info to determine if payload needs to be decrypted or decompressed
-	if (rxHeader.encryption != 0) {
-		printf("\nDecrypting the message:...\n");
 
-		//Would you like to decrypt the message (Y/N)?
-		decryptXOR(rxHeader.payloadSize, (char*)message, (char*)rxPayload);
-	}
-	else {
-		printf("\nMessage is not encrypted\n");
-	}
-	if (rxHeader.compression == 1) {	//Uncompress Huffman compression
-		printf("\nDecompressing the text from RLE... \n");
-		// rxPayload = decompress(rxPayload)
-
-		RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
-
-	}
-	else if (rxHeader.compression == 2) //Uncompress Huffman compression
+	if (onoff == 0)
 	{
-		printf("\nDecompressing the text from Huffman... \n");
-
-		Huffman_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, rxHeader.payloadSize, *textBufSize * sizeof(char));
-		compressionRatio(*(int*)message, *textBufSize * sizeof(char));
+		printf("\n\nMessage: %s\n\n", (char*)message);
+		PlaybackAudio( (short*)message);
 	}
-	else if (rxHeader.compression == 3) //Uncompress both huffman and RLE compression
+	else
 	{
-		printf("\nDecompressing the text from both compression styles... \n");
+		if (rxHeader.encryption != 0) {
+			printf("\nDecrypting the message:...\n");
 
-		RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *textBufSize * sizeof(char));
-		Huffman_Uncompress((unsigned char*)message, (unsigned char*)rxPayload, rxHeader.payloadSize, *textBufSize * sizeof(char));
+			//Would you like to decrypt the message (Y/N)?
+			decryptXOR( (char*)message, buf);
+		}
+		else {
+			printf("\nMessage is not encrypted\n");
+		}
+		if (rxHeader.compression == 1) {	//Uncompress Huffman compression
+			printf("\nDecompressing the text from RLE... \n");
+			// rxPayload = decompress(rxPayload)
 
+			RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *TextBufSize * sizeof(char));
+
+		}
+		else if (rxHeader.compression == 2) //Uncompress Huffman compression
+		{
+			printf("\nDecompressing the text from Huffman... \n");
+
+			Huffman_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, rxHeader.payloadSize, *TextBufSize * sizeof(char));
+			compressionRatio(*(int*)message, *TextBufSize * sizeof(char));
+		}
+		else if (rxHeader.compression == 3) //Uncompress both huffman and RLE compression
+		{
+			printf("\nDecompressing the text from both compression styles... \n");
+
+			RLE_Uncompress((unsigned char*)rxPayload, (unsigned char*)message, *TextBufSize * sizeof(char));
+			Huffman_Uncompress((unsigned char*)message, (unsigned char*)rxPayload, rxHeader.payloadSize, *TextBufSize * sizeof(char));
+
+		}
+		else {
+			printf("\nMessage is not compressed\n");
+		}
 	}
-	else {
-		printf("\nMessage is not compressed\n");
-	}
-
 	return(0);
 }
 
-
-
-int CRC(void* message, void* sentMessage)
+void SendReceive(void* message, int headerOnOff, char* MessageType, int compress, int encrypt)
 {
-	//unsigned char inBuf[] = "0123456789"; //input
 
-	int nBytes = strlen((char*)message); //number of characters
-	crc compCRC;
-	char CRCstring[8];
-
-	//char* sentMessage = (char*)malloc((nBytes + 8) * sizeof(unsigned char)); //buffer	
-
-	int i; //counter
-
-	//Complete CRCs and send message
-	//Change bits to see effect on CRC
-	for (i = 0; i <= nBytes; i++)
+	switch (*txrx)
 	{
-		compCRC = crcSlow((unsigned char*)message, nBytes);
-		sprintf(CRCstring, " 0x%x", compCRC);
-		strcpy((char*)sentMessage, (char*)message);
-		strcat((char*)sentMessage, CRCstring);
-		printf("Sent message with CRC. %s\n", sentMessage);
-		*(char*)message = '0';
-		//*message[i++];
+	case 0:
+		if (headerOnOff == 1)
+		{
+			printf("\n\nPress a key to receive...");
+			getchar();
+			receive(&rxHeader, (void**)message);
+			DD(message, MessageType, headerOnOff);
+		}
+		else
+		{
+			printf("\n\nPress a key to receive...");
+			getchar();
+			NHreceive((void**)message, sizeof(message));
+			DD(message, MessageType, headerOnOff);
+		}
+		break;
+	case 1:
+		switch (*MessageType)
+		{
+		case 'T':
+			if (headerOnOff == 1)
+			{
+				printf("\n\nPress a key to transmit ...");
+				getchar();
+				if (encrypt == TRUE)
+				{
+					transmit(&txHeader, buf);
+				}
+				else
+				{
+					transmit(&txHeader, message);
+				}
+			}
+			else
+			{
+				printf("\n\nPress a key to transmit ...");
+				getchar();
+				if (encrypt == TRUE)
+				{
+					NHtransmit(buf, sizeof(buf) + 1);
+				}
+				else
+				{
+					NHtransmit(message, sizeof(message) + 1);
+				}
+			}
+			break;
+		case 'A':
+			if (headerOnOff == 1)
+			{
+				printf("\n\nPress a key to transmit ...");
+				getchar();
+
+				if (compress == TRUE)
+				{
+					transmit(&txHeader, (void*)buf);
+				}
+				else
+				{
+					transmit(&txHeader, message);
+				}
+			}
+			else
+			{
+				printf("\n\nPress a key to transmit ...");
+				getchar();
+				
+				
+				if (encrypt == TRUE || compress == TRUE)
+				{
+					NHtransmit((void*)buf, sizeof(buf));
+				}
+				else
+				{
+					NHtransmit(message, sizeof(message));
+				}
+				
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
 	}
-	free(sentMessage);
-	return(0);
 
 }
 
-
-
-
-
-//int messageloop()
-//{
-//	char messType = {NULL};
-//	int pass = FALSE;
-//	char c;
-//	
-//	do
-//	{
-//		printf("\nWhat type of message would you like to send? (Audio = A, Text = T):\n");
-//		scanf_s(" %c", &messType, 1);
-//		while ((c = getchar()) != '\n' && c != EOF) {}
-//		if (messType == 'A' || messType == 'T')
-//		{
-//			pass = TRUE;
-//		}
-//		else
-//		{
-//			printf("\nERROR: invalid input. Please retry.\n");
-//		}
-//	}while (!pass);
-//
-//	return(messType);
-//}
-
-
-
-
-
-
-
-//void NoQueues(long lBigBufSize, short *iBigBuf, char *Message)
-//{
-//	int messagetype;
-//
-//
-//	messagetype = messageloop();
-//	if (messagetype == 'A')
-//	{
-//		getAudioFromUser(lBigBufSize, iBigBuf);
-//	}
-//	else if (messagetype == 'T')
-//	{
-//		getMessageFromUser(Message);
-//	}
-//	
-//}
-
-
-
-
-//void testAll()
-//{
-//	audioTest();
-//	queuesTest();
-//}
-
-
-//int menu(int TextBufSize, long lBigBufSize, short *iBigBuf, char *Message)
-//{
-//	int pass = FALSE;
-//	int amount = FALSE;
-//	char x = NULL; //Tx or Rx
-//
-//	char c;
-//	char setting = '0'; //where you are in the menu
-//	char loc;
-//	
-//
-//	char options[6][25] = { "Test Functionality","Audio Settings", "Text Settings", "Tx/Rx with Queues","Tx/Rx without Queues", "Exit" };
-//
-//	printf("Coded Messaging System\n	By: Amy Wentzell and Kyle Dick\n	Version: 2023\n\n\n");
-//
-//	do
-//	{
-//
-//		switch (setting)
-//		{
-//
-//		case '0':
-//			printf("\nWelcome! Choose your setting: \n\n");
-//			for (int i = 1; i < 7; i++)
-//			{
-//				printf("(%d)	", i);
-//				for (int j = 0; j < 25; j++)
-//				{
-//					printf("%c", options[i - 1][j]);
-//				}
-//				printf("\n");
-//			}
-//			printf("Choice:\n");
-//			scanf_s("%c", &loc, 1);
-//			while ((c = getchar()) != '\n' && c != EOF) {}
-//			setting = loc;
-//			break;
-//		case '1':
-//			// TEST
-//			testAll();
-//			setting = '0';
-//			break;
-//		case '2':
-//			//AudioSettings
-//			setting = '0';
-//			break;
-//		case '3':
-//			//Text Settings
-//
-//			TextBufSize = TextSettings(TextBufSize);
-//			setting = '0';
-//			printf("\n			Setting is %c, TextBufSize is %d.\n", setting, TextBufSize);
-//			break;
-//		case '4':
-//			printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n");
-//			scanf_s("%c", &x, 1);
-//			while ((c = getchar()) != '\n' && c != EOF) {}
-//			if (x == '1')
-//			{
-//				printf("How many messages would you like to send?(1 - 10):\n");
-//				scanf_s("%d", &amount);
-//				if (2 <= amount && amount <= 10)
-//				{
-//					
-//					pass = TRUE;
-//				}
-//				else if (amount == 1)
-//				{
-//					NoQueues(lBigBufSize, iBigBuf, Message);
-//					pass = TRUE;
-//				}
-//				else
-//				{
-//					printf("\nERROR: invalid input. Please retry.\n");
-//				}
-//			}
-//			else if (x == '0')
-//			{
-//				
-//				pass = TRUE;
-//			}
-//			else
-//			{
-//				printf("\nERROR: invalid input. Please retry.\n");
-//			}
-//			break;
-//		case '5':
-//			//Send one audio or text message
-//			printf("Are you transmitting or receiving? (Transmitting = 1, Receiving = 0):\n");
-//			scanf_s("%c", &x, 1);
-//			while ((c = getchar()) != '\n' && c != EOF) {}
-//			if (x == '1')
-//			{
-//				NoQueues(lBigBufSize, iBigBuf, Message);
-//				//printf("%s sending message...\n", Message);
-//				amount = 1;
-//				pass = TRUE;
-//			}
-//			else if (x == '0')
-//			{
-//				amount = 0;
-//				pass = TRUE;
-//			}
-//			else
-//			{
-//				printf("\nERROR: invalid input. Please retry.\n");
-//			}
-//			break;
-//		case '6':
-//			exit(0);
-//			break;
-//		default:
-//			break;
-//		}
-//
-//	} while (!pass);
-//
-//	return(amount);
-//}
+void AddMessageToQueue(link p, void *message)
+{
+	InitQueue();
+	p->Data.rxBuff = message;
+	AddToQueue(p);
+}

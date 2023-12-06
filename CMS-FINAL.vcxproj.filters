@@ -18,12 +18,6 @@
     <ClCompile Include="rle.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="buffer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="compression.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="huffman.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,9 +25,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="menuactions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="menu.cpp">
@@ -51,12 +42,24 @@
     <ClCompile Include="headerSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Checksum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="encrypt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="menuactions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="compression.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VoteOn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="compression.h">
@@ -80,13 +83,22 @@
     <ClInclude Include="message.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="menuactions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="huffman.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headerSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Checksum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="encrypt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="menuactions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoteOn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

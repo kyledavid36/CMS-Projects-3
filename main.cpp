@@ -17,7 +17,9 @@ Authors: Amy Wentzell and Kyle Dick
 #include "menuactions.h"
 #include "sound.h"
 #include "Header.h"
-
+#include "message.h"
+#include "VoteOn.h"
+#include "compression.h"
 
 //
 //void Sender(void* buffer, long int size); //sending function
@@ -33,16 +35,16 @@ const int BUFSIZE = 140;							// Buffer size
 //
 ////Audio
 int NSamples =  DEFAULT_NSAMPLES; 
-int AudBufSize = MIN_BUFSIZE;
+int AudBufSize = 15 * SAMPLES_SEC;
 int SamplesSec = SAMPLES_SEC;
 
+long lBigBufSize;
 //Text
 int *TextBufSize;
 
 //Audio
 int *RecordTime;
-short AudioBuf[SAMPLES_SEC * RECORD_TIME];
-long  AudioBufSize = SAMPLES_SEC * RECORD_TIME;	// total number of samples
+short iBigBuf;
 
 
 int *menuchoice;
@@ -54,9 +56,8 @@ int* txrx;
 //wchar_t COMPORT_Tx[] = L"COM8";					// COM port used for Tx (use L"COM8" for transmit program)
 
 ////Physical ports
-//wchar_t COMPORT_Rx[5];						// Check device manager after plugging device in and change this port
-//wchar_t COMPORT_Tx[5];						// Check device manager after plugging device in and change this port
-LPCSTR COMPORT;
+wchar_t COMPORT_Rx[5] = L"COM3";						// Check device manager after plugging device in and change this port
+wchar_t COMPORT_Tx[5] = L"COM5";						// Check device manager after plugging device in and change this port
 ////wcsncpy(COMPORT_Tx, L"COM", 3);
 //COMPORT_Tx[0] = L'C';
 
@@ -64,18 +65,22 @@ LPCSTR COMPORT;
 // --> If COM# is larger than 9 then use the following syntax--> "\\\\.\\COM10"
 
 // Communication variables and parameters
-HANDLE hComRx;										// Pointer to the selected COM port (Receiver)
-HANDLE hComTx;										// Pointer to the selected COM port (Transmitter)
+HANDLE hCom;										// Pointer to the selected COM port (Receiver)
 int nComRate = 230400;//9600*16;								// Baud (Bit) rate in bits/second 
 int nComBits = 8;									// Number of bits per frame
 COMMTIMEOUTS timeout;								// A commtimeout struct variable
 
+DWORD bytesRead;
 
 Header txHeader;						// Header transmitted 
 Header rxHeader;						// Header received
 
-int com = 0; //Receiving com port
 
+int NumQuotes = fnumQuotes();
+
+/************		AUDIO FILE		 ************/
+char inputfilename[30] = "recording.dat";
+char secretKey[] = "CMSProjectsIII";
 
 
 #define MAX_NUM_MESSAGES 10
@@ -85,7 +90,11 @@ int com = 0; //Receiving com port
 
 int main()
 {
-	
+	unsigned int insize = 0; //size of input
+	unsigned char* buf;
+	int buffersize = 0; //size of buffer before compression
+	long* compsize;
+	long int size = 300;
 
 	int TBuff = BUFSIZE; //Default Text Buffer Size
 	int RTime = RECORD_TIME; //Default Record Time
@@ -97,37 +106,32 @@ int main()
 	RecordTime = &RTime;
 	menuchoice = &menuChoice;
 	txrx = &transmit;
+	compsize = &size;
 
-	menu(menuchoice, TextBufSize, RecordTime, &com, AudioBufSize, AudioBuf, txrx, COMPORT, rxHeader, txHeader);
-
+	/*******************	BUFFERS ****************************/
+	void* message = (void*)malloc(AudBufSize * sizeof(short));
+	/***********	MESSAGE.CPP REQUIRED MALLOC	***************/
 	
+	long int* Indices = (long int*)malloc(NumQuotes * sizeof(long int));
+	int* LengthMessage = (int*)malloc(NumQuotes * sizeof(int));
 
+
+	setup(menuchoice, RecordTime);
+
+	lBigBufSize = SAMPLES_SEC * (*RecordTime);
+	insize = lBigBufSize * sizeof(short);
+	buffersize = (insize * 104 + 50) / 100 + 384;
+	buf = (unsigned char*)malloc(buffersize);
+
+
+	menu(message, Indices, LengthMessage, menuchoice, RecordTime, rxHeader, txHeader, insize, buf, compsize);
+
+	free(message);
+	free(Indices);
+	free(LengthMessage);
+	free(buf);
 
 
 	return(0);
 
 }
-
-
-
-
-
-
-//
-//
-//void Sender(void *buffer, long int size)
-//{
-//	initPort(&hComTx, COMPORT_Tx, nComRate, nComBits, timeout);						// Initialize the Tx port
-//	Sleep(500);
-//	outputToPort(&hComTx, buffer, size);											// Send string to port - include space for '\0' termination
-//	Sleep(500);																		// Allow time for signal propagation on cable 
-//}
-//
-//int Receiver(void *buffer, long int size)
-//{
-//	initPort(&hComRx, COMPORT_Rx, nComRate, nComBits, timeout);						// Initialize the Rx port
-//	Sleep(500);
-//	DWORD bytesRead;
-//	bytesRead = inputFromPort(&hComRx, buffer, size);								// Receive string from port
-//	return(bytesRead);
-//}

@@ -8,7 +8,7 @@ typedef struct header Header;
 
 struct header {
 	short int sid;
-	short int rid;
+	int rid[3];
 	char priority;				// an array for a queue
 	long int payloadSize;		// Number of bytes in payload after this header
 	char payLoadType;			// 0: Text, 1: Audio, 2: Image etc.

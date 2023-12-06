@@ -128,8 +128,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="buffer.c" />
+    <ClCompile Include="Checksum.cpp" />
     <ClCompile Include="compression.c" />
+    <ClCompile Include="encrypt.cpp" />
     <ClCompile Include="headerSettings.cpp" />
     <ClCompile Include="huffman.c" />
     <ClCompile Include="main.cpp" />
@@ -142,10 +143,12 @@
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
     <ClCompile Include="sound.cpp" />
+    <ClCompile Include="VoteOn.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="buffer.h" />
+    <ClInclude Include="Checksum.h" />
     <ClInclude Include="compression.h" />
+    <ClInclude Include="encrypt.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="headerSettings.h" />
     <ClInclude Include="huffman.h" />
@@ -156,6 +159,7 @@
     <ClInclude Include="rle.h" />
     <ClInclude Include="RS232Comm.h" />
     <ClInclude Include="sound.h" />
+    <ClInclude Include="VoteOn.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Test.dat" />
